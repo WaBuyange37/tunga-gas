@@ -1,0 +1,41 @@
+/* Home Banner Styles */
+.home-banner {
+  background: linear-gradient(to right, var(--primary), var(--primary-dark));
+  color: white;
+  padding: 4rem 0;
+  text-align: center;
+}
+
+.home-banner-content {
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.home-banner h1 {
+  font-size: 3rem;
+  margin-bottom: 1.5rem;
+}
+
+.home-banner p {
+  font-size: 1.25rem;
+  margin-bottom: 2rem;
+  opacity: 0.9;
+}
+
+.home-banner-buttons {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+@media (min-width: 1024px) {
+  .home-banner {
+    padding: 6rem 0;
+  }
+
+  .home-banner h1 {
+    font-size: 4rem;
+  }
+}
+
