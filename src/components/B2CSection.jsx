@@ -67,7 +67,7 @@ const B2CSection = (props) => {
       price: 22000,
       rating: 5,
       reviews: 18,
-      image: "/images/ga3.jpeg",
+      image: "/images/gas3.jpeg",
     },
     {
       id: 3,
@@ -75,7 +75,7 @@ const B2CSection = (props) => {
       price: 28000,
       rating: 4,
       reviews: 12,
-      image: "/images/ga4.jpeg",
+      image: "/images/gas1.jpeg",
     },
     {
       id: 4,
@@ -83,7 +83,7 @@ const B2CSection = (props) => {
       price: 15000,
       rating: 4.5,
       reviews: 32,
-      image: "/images/ga5.jpeg",
+      image: "/images/mai-gas.jpeg",
     },
   ]
 
