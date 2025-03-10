@@ -10,6 +10,9 @@
   max-width: 800px;
   margin: 0 auto;
 }
+.k{
+  border: 3px solid black;
+}
 
 .home-banner h1 {
   font-size: 3rem;

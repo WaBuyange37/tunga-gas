@@ -2,7 +2,6 @@ import { Link } from "react-router-dom"
 import { FaStar, FaStarHalfAlt, FaShoppingCart, FaHeart } from "react-icons/fa"
 import "./B2CSection.css"
 import React from "react"
-import gas1 from "./images/gas1.jpeg"
 
 const B2CSection = () => {
   const products = [
@@ -12,7 +11,7 @@ const B2CSection = () => {
       price: 12000,
       rating: 4.5,
       reviews: 24,
-      image: "/placeholder.svg?height=200&width=300",
+      image: "/images/ga2.jpeg?height=200&width=300",
     },
     {
       id: 2,
@@ -67,7 +66,7 @@ const B2CSection = () => {
         <div className="b2c-grid">
           {products.map((product) => (
             <div className="product-card" key={product.id}>
-              <img src={gas1 } alt={product.name} className="product-image" />
+              <img src={product.image || "/placeholder.svg"} alt={product.name} className="product-image" />
               <div className="product-content">
                 <h3 className="product-title">{product.name}</h3>
                 <div className="product-price">RWF {product.price.toLocaleString()}</div>
