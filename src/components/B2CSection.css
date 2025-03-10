@@ -1,6 +1,6 @@
-/* B2C Section Styles */
 .b2c-section {
   padding: 4rem 0;
+  background-color: var(--gray-50);
 }
 
 .b2c-header {
@@ -8,9 +8,20 @@
   margin-bottom: 3rem;
 }
 
+.b2c-header h2 {
+  font-size: 2.5rem;
+  margin-bottom: 0.5rem;
+  color: var(--primary);
+}
+
+.b2c-header p {
+  font-size: 1.125rem;
+  color: var(--gray-600);
+}
+
 .b2c-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
   gap: 2rem;
 }
 
@@ -27,10 +38,57 @@
   box-shadow: var(--box-shadow-md);
 }
 
+.product-image-container {
+  position: relative;
+  overflow: hidden;
+  height: 200px;
+}
+
 .product-image {
   width: 100%;
-  height: 200px;
+  height: 100%;
   object-fit: cover;
+  transition: transform 0.3s ease;
+}
+
+.product-card:hover .product-image {
+  transform: scale(1.05);
+}
+
+.product-actions {
+  position: absolute;
+  top: 0.5rem;
+  right: 0.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  opacity: 0;
+  transform: translateX(10px);
+  transition: all 0.3s ease;
+}
+
+.product-card:hover .product-actions {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+.product-action-btn {
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 50%;
+  background-color: white;
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  transition: var(--transition);
+}
+
+.product-action-btn:hover {
+  background-color: var(--primary);
+  color: white;
 }
 
 .product-content {
@@ -38,7 +96,7 @@
 }
 
 .product-title {
-  font-size: 1.25rem;
+  font-size: 1.125rem;
   margin-bottom: 0.5rem;
 }
 
@@ -46,7 +104,7 @@
   font-size: 1.25rem;
   font-weight: 700;
   color: var(--primary);
-  margin-bottom: 1rem;
+  margin-bottom: 0.5rem;
 }
 
 .product-rating {
@@ -59,67 +117,35 @@
 .product-rating span {
   margin-left: 0.5rem;
   color: var(--gray-600);
+  font-size: 0.875rem;
 }
 
 .product-footer {
   display: flex;
-  justify-content: space-between;
-  align-items: center;
+  gap: 0.5rem;
 }
 
-/* B2B Section Styles */
-.b2b-section {
-  padding: 4rem 0;
-  background-color: var(--gray-50);
-}
-
-.b2b-header {
-  text-align: center;
-  margin-bottom: 3rem;
-}
-
-.b2b-content {
-  display: flex;
-  flex-direction: column;
-  gap: 2rem;
-}
-
-.b2b-card {
-  background-color: white;
-  border-radius: var(--border-radius);
-  padding: 2rem;
-  box-shadow: var(--box-shadow);
-  display: flex;
-  flex-direction: column;
-  gap: 1.5rem;
-}
-
-.b2b-card-header {
+.product-footer .btn {
   display: flex;
   align-items: center;
-  gap: 1rem;
+  gap: 0.5rem;
 }
 
-.b2b-card-icon {
-  width: 3rem;
-  height: 3rem;
-  background-color: rgba(255, 107, 53, 0.1);
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: var(--primary);
-}
-
-.b2b-card-title {
-  font-size: 1.5rem;
-}
-
-.b2b-card-content {
+.product-footer .btn-primary {
   flex: 1;
 }
 
-.b2b-card-footer {
-  display: flex;
-  justify-content: flex-end;
+.text-center {
+  text-align: center;
 }
+
+.mt-5 {
+  margin-top: 3rem;
+}
+
+@media (max-width: 768px) {
+  .b2c-grid {
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  }
+}
+

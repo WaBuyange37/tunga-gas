@@ -5,7 +5,7 @@ import B2BSection from "../components/B2BSection"
 import { FaGasPump, FaShippingFast, FaUserShield, FaHeadset } from "react-icons/fa"
 import "./HomePage.css"
 
-const HomePage = () => {
+const HomePage = ({ addToCart }) => {
   const features = [
     {
       icon: <FaGasPump size={24} />,
@@ -51,10 +51,11 @@ const HomePage = () => {
         </div>
       </section>
 
-      <B2CSection />
+      <B2CSection addToCart={addToCart} />
       <B2BSection />
     </div>
   )
 }
 
 export default HomePage
+

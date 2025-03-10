@@ -1,0 +1,22 @@
+.cart-page {
+  padding: 2rem 0;
+  min-height: calc(100vh - 200px);
+}
+
+.cart-page-title {
+  margin-bottom: 2rem;
+  text-align: center;
+  color: var(--gray-800);
+}
+
+@media (max-width: 768px) {
+  .cart-page {
+    padding: 1rem 0;
+  }
+
+  .cart-page-title {
+    font-size: 1.75rem;
+    margin-bottom: 1.5rem;
+  }
+}
+

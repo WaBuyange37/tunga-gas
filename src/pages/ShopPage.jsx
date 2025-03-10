@@ -1,272 +1,267 @@
-import React, { useState, useEffect } from 'react';
-import { FaFilter, FaSearch, FaShoppingCart, FaHeart, FaStar, FaStarHalfAlt } from 'react-icons/fa';
-import './ShopPage.css';
+"use client"
+
+import React,{ useState, useEffect } from "react"
+import {
+  FaStar,
+  FaStarHalfAlt,
+  FaShoppingCart,
+  FaHeart,
+  FaFilter,
+  FaSearch,
+  FaChevronLeft,
+  FaChevronRight,
+  FaCheck,
+} from "react-icons/fa"
+import "./ShopPage.css"
 
 const ShopPage = () => {
-  const [products, setProducts] = useState([]);
-  const [filteredProducts, setFilteredProducts] = useState([]);
-  const [categories, setCategories] = useState([]);
-  const [selectedCategory, setSelectedCategory] = useState('all');
-  const [priceRange, setPriceRange] = useState({ min: 0, max: 50000 });
-  const [sortBy, setSortBy] = useState('featured');
-  const [searchQuery, setSearchQuery] = useState('');
-  const [isFilterOpen, setIsFilterOpen] = useState(false);
-  const [currentPage, setCurrentPage] = useState(1);
-  const productsPerPage = 8;
+  const [activeCategory, setActiveCategory] = useState("all")
+  const [priceRange, setPriceRange] = useState(50000)
+  const [searchQuery, setSearchQuery] = useState("")
+  const [currentPage, setCurrentPage] = useState(1)
+  const [showFilters, setShowFilters] = useState(false)
+  const [cartItems, setCartItems] = useState([])
+  const [wishlistItems, setWishlistItems] = useState([])
+  const [notification, setNotification] = useState({ show: false, message: "", type: "" })
+  const productsPerPage = 6
 
-  // Mock data - in a real app, this would come from an API
+  // Load cart and wishlist from localStorage on component mount
   useEffect(() => {
-    const mockProducts = [
-      {
-        id: 1,
-        name: '6kg Gas Cylinder',
-        price: 12000,
-        rating: 4.5,
-        reviews: 24,
-        image: '/placeholder.svg?height=300&width=300',
-        category: 'cylinders',
-        description: 'Perfect for small households and apartments. Lightweight and easy to handle.',
-        inStock: true,
-        featured: true
-      },
-      {
-        id: 2,
-        name: '12kg Gas Cylinder',
-        price: 22000,
-        rating: 5,
-        reviews: 18,
-        image: '/placeholder.svg?height=300&width=300',
-        category: 'cylinders',
-        description: 'Ideal for medium-sized households. Our most popular size.',
-        inStock: true,
-        featured: true
-      },
-      {
-        id: 3,
-        name: '15kg Gas Cylinder',
-        price: 28000,
-        rating: 4,
-        reviews: 12,
-        image: '/placeholder.svg?height=300&width=300',
-        category: 'cylinders',
-        description: 'Great for larger households with higher gas consumption needs.',
-        inStock: true,
-        featured: false
-      },
-      {
-        id: 4,
-        name: 'Gas Stove - Single Burner',
-        price: 15000,
-        rating: 4.5,
-        reviews: 32,
-        image: '/placeholder.svg?height=300&width=300',
-        category: 'stoves',
-        description: 'Compact and efficient single burner stove for basic cooking needs.',
-        inStock: true,
-        featured: true
-      },
-      {
-        id: 5,
-        name: 'Gas Stove - Double Burner',
-        price: 25000,
-        rating: 4.5,
-        reviews: 28,
-        image: '/placeholder.svg?height=300&width=300',
-        category: 'stoves',
-        description: 'Versatile double burner stove for cooking multiple dishes simultaneously.',
-        inStock: true,
-        featured: false
-      },
-      {
-        id: 6,
-        name: 'Gas Regulator - Standard',
-        price: 5000,
-        rating: 4,
-        reviews: 45,
-        image: '/placeholder.svg?height=300&width=300',
-        category: 'accessories',
-        description: 'Standard regulator for safe and controlled gas flow.',
-        inStock: true,
-        featured: false
-      },
-      {
-        id: 7,
-        name: 'Gas Hose - 1.5m',
-        price: 3000,
-        rating: 4,
-        reviews: 36,
-        image: '/placeholder.svg?height=300&width=300',
-        category: 'accessories',
-        description: 'High-quality gas hose for connecting cylinders to appliances.',
-        inStock: true,
-        featured: false
-      },
-      {
-        id: 8,
-        name: 'Gas Leak Detector',
-        price: 8000,
-        rating: 5,
-        reviews: 22,
-        image: '/placeholder.svg?height=300&width=300',
-        category: 'safety',
-        description: 'Essential safety device to detect gas leaks in your home.',
-        inStock: true,
-        featured: true
-      },
-      {
-        id: 9,
-        name: '20kg Gas Cylinder',
-        price: 35000,
-        rating: 4.5,
-        reviews: 15,
-        image: '/placeholder.svg?height=300&width=300',
-        category: 'cylinders',
-        description: 'Heavy-duty cylinder for commercial use or large households.',
-        inStock: false,
-        featured: false
-      },
-      {
-        id: 10,
-        name: 'Gas Stove - Four Burner',
-        price: 45000,
-        rating: 5,
-        reviews: 8,
-        image: '/placeholder.svg?height=300&width=300',
-        category: 'stoves',
-        description: 'Professional-grade four burner stove for serious cooking enthusiasts.',
-        inStock: true,
-        featured: true
-      },
-      {
-        id: 11,
-        name: 'Cylinder Trolley',
-        price: 12000,
-        rating: 4,
-        reviews: 19,
-        image: '/images/ga2.jpeg',
-        category: 'accessories',
-        description: 'Make moving heavy gas cylinders easy with this sturdy trolley.',
-        inStock: true,
-        featured: false
-      },
-      {
-        id: 12,
-        name: 'Gas Safety Valve',
-        price: 6000,
-        rating: 4.5,
-        reviews: 27,
-        image: '/placeholder.svg?height=300&width=300',
-        category: 'safety',
-        description: 'Automatically cuts off gas flow in case of leaks or emergencies.',
-        inStock: true,
-        featured: false
+    const savedCart = localStorage.getItem("cart")
+    const savedWishlist = localStorage.getItem("wishlist")
+
+    if (savedCart) {
+      try {
+        setCartItems(JSON.parse(savedCart))
+      } catch (e) {
+        console.error("Error parsing cart data:", e)
       }
-    ];
+    }
 
-    setProducts(mockProducts);
-    setFilteredProducts(mockProducts);
+    if (savedWishlist) {
+      try {
+        setWishlistItems(JSON.parse(savedWishlist))
+      } catch (e) {
+        console.error("Error parsing wishlist data:", e)
+      }
+    }
+  }, [])
 
-    // Extract unique categories
-    const uniqueCategories = [...new Set(mockProducts.map(product => product.category))];
-    setCategories(uniqueCategories);
-  }, []);
-
-  // Filter and sort products
+  // Save cart and wishlist to localStorage whenever they change
   useEffect(() => {
-    let result = [...products];
+    localStorage.setItem("cart", JSON.stringify(cartItems))
+  }, [cartItems])
 
-    // Filter by category
-    if (selectedCategory !== 'all') {
-      result = result.filter(product => product.category === selectedCategory);
+  useEffect(() => {
+    localStorage.setItem("wishlist", JSON.stringify(wishlistItems))
+  }, [wishlistItems])
+
+  // Show notification
+  const showNotification = (message, type = "success") => {
+    setNotification({ show: true, message, type })
+
+    // Hide notification after 3 seconds
+    setTimeout(() => {
+      setNotification({ show: false, message: "", type: "" })
+    }, 3000)
+  }
+
+  const categories = [
+    { id: "all", name: "All Products" },
+    { id: "cylinders", name: "Gas Cylinders" },
+    { id: "stoves", name: "Gas Stoves" },
+    { id: "accessories", name: "Accessories" },
+    { id: "regulators", name: "Regulators" },
+  ]
+
+  const products = [
+    {
+      id: 1,
+      name: "6kg Gas Cylinder",
+      price: 12000,
+      rating: 4.5,
+      reviews: 24,
+      image: "/images/akandi1.jpeg",
+      category: "cylinders",
+      description: "Perfect for small households and apartments.",
+    },
+    {
+      id: 2,
+      name: "12kg Gas Cylinder",
+      price: 22000,
+      rating: 5,
+      reviews: 18,
+      image: "/images/akandi2.jpeg",
+      category: "cylinders",
+      description: "Ideal for medium-sized families.",
+    },
+    {
+      id: 3,
+      name: "15kg Gas Cylinder",
+      price: 28000,
+      rating: 4,
+      reviews: 12,
+      image: "/images/akandi3.jpeg",
+      category: "cylinders",
+      description: "Best for large families and extended use.",
+    },
+    {
+      id: 4,
+      name: "Gas Stove - Single Burner",
+      price: 15000,
+      rating: 4.5,
+      reviews: 32,
+      image: "/images/akandi4.jpeg",
+      category: "stoves",
+      description: "Compact and efficient single burner stove.",
+    },
+    {
+      id: 5,
+      name: "Gas Stove - Double Burner",
+      price: 25000,
+      rating: 4.5,
+      reviews: 16,
+      image: "/images/akandi5.jpeg",
+      category: "stoves",
+      description: "Versatile double burner for cooking multiple dishes.",
+    },
+    {
+      id: 6,
+      name: "Gas Regulator",
+      price: 5000,
+      rating: 4,
+      reviews: 42,
+      image: "/images/ishyiga.jpeg",
+      category: "regulators",
+      description: "High-quality regulator for safe gas usage.",
+    },
+    {
+      id: 7,
+      name: "Gas Hose - 2m",
+      price: 3000,
+      rating: 4,
+      reviews: 28,
+      image: "/images/ishyiga1.jpeg",
+      category: "accessories",
+      description: "Durable 2-meter hose for connecting cylinder to stove.",
+    },
+    {
+      id: 8,
+      name: "Cylinder Trolley",
+      price: 8000,
+      rating: 4.5,
+      reviews: 14,
+      image: "/images/mai-gas.jpeg",
+      category: "accessories",
+      description: "Makes moving heavy cylinders easy and safe.",
+    },
+  ]
+
+  // Add to cart function
+  const addToCart = (product) => {
+    if (product.outOfStock) return
+
+    const existingItem = cartItems.find((item) => item.id === product.id)
+
+    if (existingItem) {
+      // If item already exists, increase quantity
+      const updatedCart = cartItems.map((item) =>
+        item.id === product.id ? { ...item, quantity: item.quantity + 1 } : item,
+      )
+      setCartItems(updatedCart)
+      showNotification(`Increased ${product.name} quantity in cart`)
+    } else {
+      // Add new item to cart
+      setCartItems([...cartItems, { ...product, quantity: 1 }])
+      showNotification(`Added ${product.name} to cart`)
     }
+  }
 
-    // Filter by price range
-    result = result.filter(
-      product => product.price >= priceRange.min && product.price <= priceRange.max
-    );
+  // Toggle wishlist function
+  const toggleWishlist = (product) => {
+    const isInWishlist = wishlistItems.some((item) => item.id === product.id)
 
-    // Filter by search query
-    if (searchQuery) {
-      const query = searchQuery.toLowerCase();
-      result = result.filter(
-        product => 
-          product.name.toLowerCase().includes(query) || 
-          product.description.toLowerCase().includes(query) ||
-          product.category.toLowerCase().includes(query)
-      );
+    if (isInWishlist) {
+      // Remove from wishlist
+      const updatedWishlist = wishlistItems.filter((item) => item.id !== product.id)
+      setWishlistItems(updatedWishlist)
+      showNotification(`Removed ${product.name} from wishlist`, "info")
+    } else {
+      // Add to wishlist
+      setWishlistItems([...wishlistItems, product])
+      showNotification(`Added ${product.name} to wishlist`)
     }
+  }
 
-    // Sort products
-    switch (sortBy) {
-      case 'price-low':
-        result.sort((a, b) => a.price - b.price);
-        break;
-      case 'price-high':
-        result.sort((a, b) => b.price - a.price);
-        break;
-      case 'rating':
-        result.sort((a, b) => b.rating - a.rating);
-        break;
-      case 'featured':
-      default:
-        result.sort((a, b) => (b.featured ? 1 : 0) - (a.featured ? 1 : 0));
-        break;
-    }
+  // Check if product is in cart
+  const isInCart = (productId) => {
+    return cartItems.some((item) => item.id === productId)
+  }
 
-    setFilteredProducts(result);
-    setCurrentPage(1); // Reset to first page when filters change
-  }, [selectedCategory, priceRange, sortBy, searchQuery, products]);
+  // Check if product is in wishlist
+  const isInWishlist = (productId) => {
+    return wishlistItems.some((item) => item.id === productId)
+  }
 
-  // Get current products for pagination
-  const indexOfLastProduct = currentPage * productsPerPage;
-  const indexOfFirstProduct = indexOfLastProduct - productsPerPage;
-  const currentProducts = filteredProducts.slice(indexOfFirstProduct, indexOfLastProduct);
-  const totalPages = Math.ceil(filteredProducts.length / productsPerPage);
-
-  // Render rating stars
   const renderRatingStars = (rating) => {
-    const stars = [];
-    const fullStars = Math.floor(rating);
-    const hasHalfStar = rating % 1 !== 0;
+    const stars = []
+    const fullStars = Math.floor(rating)
+    const hasHalfStar = rating % 1 !== 0
 
     for (let i = 0; i < fullStars; i++) {
-      stars.push(<FaStar key={`star-${i}`} />);
+      stars.push(<FaStar key={`star-${i}`} />)
     }
 
     if (hasHalfStar) {
-      stars.push(<FaStarHalfAlt key="half-star" />);
+      stars.push(<FaStarHalfAlt key="half-star" />)
     }
 
-    return stars;
-  };
+    return stars
+  }
 
-  // Handle pagination
-  const paginate = (pageNumber) => setCurrentPage(pageNumber);
+  const filteredProducts = products.filter((product) => {
+    // Filter by category
+    const categoryMatch = activeCategory === "all" || product.category === activeCategory
 
-  // Handle price range change
-  const handlePriceChange = (e, type) => {
-    const value = parseInt(e.target.value);
-    setPriceRange(prev => ({
-      ...prev,
-      [type]: value
-    }));
-  };
+    // Filter by price
+    const priceMatch = product.price <= priceRange
 
-  // Toggle mobile filter
-  const toggleFilter = () => {
-    setIsFilterOpen(!isFilterOpen);
-  };
+    // Filter by search query
+    const searchMatch =
+      product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      product.description.toLowerCase().includes(searchQuery.toLowerCase())
+
+    return categoryMatch && priceMatch && searchMatch
+  })
+
+  // Pagination
+  const indexOfLastProduct = currentPage * productsPerPage
+  const indexOfFirstProduct = indexOfLastProduct - productsPerPage
+  const currentProducts = filteredProducts.slice(indexOfFirstProduct, indexOfLastProduct)
+  const totalPages = Math.ceil(filteredProducts.length / productsPerPage)
+
+  const paginate = (pageNumber) => {
+    if (pageNumber > 0 && pageNumber <= totalPages) {
+      setCurrentPage(pageNumber)
+      window.scrollTo(0, 0)
+    }
+  }
+
+  const toggleFilters = () => {
+    setShowFilters(!showFilters)
+  }
 
   return (
     <div className="shop-page">
-      <div className="shop-header">
+      {notification.show && <div className={`notification ${notification.type}`}>{notification.message}</div>}
+
+      <div className="shop-banner">
         <div className="container">
           <h1>Shop Gas Products</h1>
-          <p>Browse our wide selection of gas cylinders, stoves, and accessories</p>
-          
+          <p>Quality gas cylinders and accessories for your home and business</p>
+
           <div className="shop-search">
             <div className="search-input-container">
-              <FaSearch className="search-icon" />
               <input
                 type="text"
                 placeholder="Search products..."
@@ -274,8 +269,9 @@ const ShopPage = () => {
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="search-input"
               />
+              <FaSearch className="search-icon" />
             </div>
-            <button className="filter-toggle" onClick={toggleFilter}>
+            <button className="filter-toggle" onClick={toggleFilters}>
               <FaFilter /> Filters
             </button>
           </div>
@@ -283,235 +279,202 @@ const ShopPage = () => {
       </div>
 
       <div className="container">
-        <div className="shop-content">
-          <aside className={`shop-sidebar ${isFilterOpen ? 'open' : ''}`}>
+        <div className="shop-layout">
+          <aside className={`shop-sidebar ${showFilters ? "active" : ""}`}>
             <div className="filter-header">
-              <h3>Filters</h3>
-              <button className="close-filter" onClick={toggleFilter}>×</button>
+              <h3>Filter Products</h3>
+              <button className="close-filter" onClick={toggleFilters}>
+                ×
+              </button>
             </div>
-            
-            <div className="filter-section">
-              <h4>Categories</h4>
-              <div className="filter-options">
-                <label className="filter-option">
-                  <input
-                    type="radio"
-                    name="category"
-                    checked={selectedCategory === 'all'}
-                    onChange={() => setSelectedCategory('all')}
-                  />
-                  <span>All Products</span>
-                </label>
-                {categories.map(category => (
-                  <label key={category} className="filter-option">
-                    <input
-                      type="radio"
-                      name="category"
-                      checked={selectedCategory === category}
-                      onChange={() => setSelectedCategory(category)}
-                    />
-                    <span>{category.charAt(0).toUpperCase() + category.slice(1)}</span>
-                  </label>
+
+            <div className="shop-filter">
+              <h3 className="filter-title">
+                <FaFilter /> Categories
+              </h3>
+              <ul className="category-list">
+                {categories.map((category) => (
+                  <li key={category.id}>
+                    <button
+                      className={`category-button ${activeCategory === category.id ? "active" : ""}`}
+                      onClick={() => {
+                        setActiveCategory(category.id)
+                        setCurrentPage(1)
+                      }}
+                    >
+                      {category.name}
+                    </button>
+                  </li>
                 ))}
-              </div>
+              </ul>
             </div>
-            
-            <div className="filter-section">
-              <h4>Price Range</h4>
-              <div className="price-inputs">
-                <div className="price-input">
-                  <label>Min:</label>
-                  <input
-                    type="number"
-                    min="0"
-                    max={priceRange.max}
-                    value={priceRange.min}
-                    onChange={(e) => handlePriceChange(e, 'min')}
-                  />
-                </div>
-                <div className="price-input">
-                  <label>Max:</label>
-                  <input
-                    type="number"
-                    min={priceRange.min}
-                    value={priceRange.max}
-                    onChange={(e) => handlePriceChange(e, 'max')}
-                  />
-                </div>
-              </div>
-              <div className="price-slider">
+
+            <div className="shop-filter">
+              <h3 className="filter-title">Price Range</h3>
+              <div className="price-filter">
                 <input
                   type="range"
                   min="0"
                   max="50000"
                   step="1000"
-                  value={priceRange.min}
-                  onChange={(e) => handlePriceChange(e, 'min')}
-                  className="slider"
+                  value={priceRange}
+                  onChange={(e) => {
+                    setPriceRange(Number(e.target.value))
+                    setCurrentPage(1)
+                  }}
+                  className="price-slider"
                 />
-                <input
-                  type="range"
-                  min="0"
-                  max="50000"
-                  step="1000"
-                  value={priceRange.max}
-                  onChange={(e) => handlePriceChange(e, 'max')}
-                  className="slider"
-                />
+                <div className="price-range-values">
+                  <span>RWF 0</span>
+                  <span>RWF {priceRange.toLocaleString()}</span>
+                </div>
               </div>
             </div>
-            
-            <div className="filter-section">
-              <h4>Sort By</h4>
-              <div className="filter-options">
-                <label className="filter-option">
-                  <input
-                    type="radio"
-                    name="sort"
-                    checked={sortBy === 'featured'}
-                    onChange={() => setSortBy('featured')}
-                  />
-                  <span>Featured</span>
-                </label>
-                <label className="filter-option">
-                  <input
-                    type="radio"
-                    name="sort"
-                    checked={sortBy === 'price-low'}
-                    onChange={() => setSortBy('price-low')}
-                  />
-                  <span>Price: Low to High</span>
-                </label>
-                <label className="filter-option">
-                  <input
-                    type="radio"
-                    name="sort"
-                    checked={sortBy === 'price-high'}
-                    onChange={() => setSortBy('price-high')}
-                  />
-                  <span>Price: High to Low</span>
-                </label>
-                <label className="filter-option">
-                  <input
-                    type="radio"
-                    name="sort"
-                    checked={sortBy === 'rating'}
-                    onChange={() => setSortBy('rating')}
-                  />
-                  <span>Highest Rated</span>
-                </label>
+
+            {cartItems.length > 0 && (
+              <div className="shop-filter">
+                <h3 className="filter-title">
+                  <FaShoppingCart /> Cart Items
+                </h3>
+                <div className="cart-summary">
+                  <p>{cartItems.reduce((total, item) => total + item.quantity, 0)} items in cart</p>
+                  <p className="cart-total">
+                    Total: RWF{" "}
+                    {cartItems.reduce((total, item) => total + item.price * item.quantity, 0).toLocaleString()}
+                  </p>
+                  <button className="btn btn-primary w-full" onClick={() => (window.location.href = "/checkout")}>
+                    Checkout
+                  </button>
+                </div>
               </div>
-            </div>
-            
-            <button 
-              className="btn btn-primary w-full" 
-              onClick={() => {
-                setSelectedCategory('all');
-                setPriceRange({ min: 0, max: 50000 });
-                setSortBy('featured');
-                setSearchQuery('');
-              }}
-            >
-              Reset Filters
-            </button>
+            )}
           </aside>
-          
-          <div className="shop-main">
-            <div className="shop-results-header">
-              <p>Showing {currentProducts.length} of {filteredProducts.length} products</p>
+
+          <main className="shop-main">
+            <div className="shop-header">
+              <div className="shop-results">
+                Showing {currentProducts.length} of {filteredProducts.length} products
+              </div>
               <div className="shop-sort-mobile">
-                <label>Sort by:</label>
-                <select value={sortBy} onChange={(e) => setSortBy(e.target.value)}>
-                  <option value="featured">Featured</option>
-                  <option value="price-low">Price: Low to High</option>
-                  <option value="price-high">Price: High to Low</option>
-                  <option value="rating">Highest Rated</option>
+                <span>Sort by:</span>
+                <select>
+                  <option>Newest</option>
+                  <option>Price: Low to High</option>
+                  <option>Price: High to Low</option>
+                  <option>Most Popular</option>
                 </select>
               </div>
             </div>
-            
-            {currentProducts.length === 0 ? (
+
+            {currentProducts.length > 0 ? (
+              <>
+                <div className="products-grid">
+                  {currentProducts.map((product) => (
+                    <div className="product-card" key={product.id}>
+                      {product.featured && <div className="product-badge featured">Featured</div>}
+                      {product.outOfStock && <div className="product-badge out-of-stock">Out of Stock</div>}
+
+                      <div className="product-image-container">
+                        <img
+                          src={product.image || "/placeholder.svg"}
+                          alt={product.name}
+                          className="product-image"
+                          onError={(e) => {
+                            e.target.onerror = null
+                            e.target.src = "/placeholder.svg"
+                          }}
+                        />
+                        <div className="product-actions">
+                          <button
+                            className={`product-action-btn ${isInWishlist(product.id) ? "active" : ""}`}
+                            onClick={() => toggleWishlist(product)}
+                            aria-label={isInWishlist(product.id) ? "Remove from wishlist" : "Add to wishlist"}
+                          >
+                            <FaHeart />
+                          </button>
+                          {!product.outOfStock && (
+                            <button
+                              className={`product-action-btn ${isInCart(product.id) ? "active" : ""}`}
+                              onClick={() => addToCart(product)}
+                              aria-label={isInCart(product.id) ? "Already in cart" : "Add to cart"}
+                            >
+                              {isInCart(product.id) ? <FaCheck /> : <FaShoppingCart />}
+                            </button>
+                          )}
+                        </div>
+                      </div>
+
+                      <div className="product-content">
+                        <div className="product-category">{product.category}</div>
+                        <h3 className="product-title">{product.name}</h3>
+                        <p className="product-description">{product.description}</p>
+                        <div className="product-rating">
+                          {renderRatingStars(product.rating)}
+                          <span>({product.reviews})</span>
+                        </div>
+                        <div className="product-price">RWF {product.price.toLocaleString()}</div>
+                        <button
+                          className={`btn btn-primary w-full ${product.outOfStock ? "btn-disabled" : isInCart(product.id) ? "btn-success" : ""}`}
+                          onClick={() => addToCart(product)}
+                          disabled={product.outOfStock}
+                        >
+                          {product.outOfStock ? (
+                            "Out of Stock"
+                          ) : isInCart(product.id) ? (
+                            <>
+                              <FaCheck /> Added to Cart
+                            </>
+                          ) : (
+                            "Add to Cart"
+                          )}
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                {totalPages > 1 && (
+                  <div className="pagination">
+                    <button
+                      className={`pagination-button ${currentPage === 1 ? "disabled" : ""}`}
+                      onClick={() => paginate(currentPage - 1)}
+                      disabled={currentPage === 1}
+                    >
+                      <FaChevronLeft />
+                    </button>
+
+                    {[...Array(totalPages)].map((_, i) => (
+                      <button
+                        key={i + 1}
+                        className={`pagination-button ${currentPage === i + 1 ? "active" : ""}`}
+                        onClick={() => paginate(i + 1)}
+                      >
+                        {i + 1}
+                      </button>
+                    ))}
+
+                    <button
+                      className={`pagination-button ${currentPage === totalPages ? "disabled" : ""}`}
+                      onClick={() => paginate(currentPage + 1)}
+                      disabled={currentPage === totalPages}
+                    >
+                      <FaChevronRight />
+                    </button>
+                  </div>
+                )}
+              </>
+            ) : (
               <div className="no-products">
                 <h3>No products found</h3>
                 <p>Try adjusting your filters or search query</p>
               </div>
-            ) : (
-              <div className="product-grid">
-                {currentProducts.map(product => (
-                  <div className="product-card" key={product.id}>
-                    {product.featured && <span className="product-badge featured">Featured</span>}
-                    {!product.inStock && <span className="product-badge out-of-stock">Out of Stock</span>}
-                    
-                    <div className="product-image-container">
-                      <img src={product.image || "/placeholder.svg"} alt={product.name} className="product-image" />
-                      <button className="wishlist-button">
-                        <FaHeart />
-                      </button>
-                    </div>
-                    
-                    <div className="product-content">
-                      <div className="product-category">{product.category}</div>
-                      <h3 className="product-title">{product.name}</h3>
-                      <p className="product-description">{product.description}</p>
-                      
-                      <div className="product-rating">
-                        {renderRatingStars(product.rating)}
-                        <span>({product.reviews})</span>
-                      </div>
-                      
-                      <div className="product-price">RWF {product.price.toLocaleString()}</div>
-                      
-                      <div className="product-actions">
-                        <button 
-                          className={`btn ${product.inStock ? 'btn-primary' : 'btn-disabled'}`}
-                          disabled={!product.inStock}
-                        >
-                          <FaShoppingCart /> {product.inStock ? 'Add to Cart' : 'Out of Stock'}
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
             )}
-            
-            {/* Pagination */}
-            {totalPages > 1 && (
-              <div className="pagination">
-                <button 
-                  className={`pagination-button ${currentPage === 1 ? 'disabled' : ''}`}
-                  onClick={() => currentPage > 1 && paginate(currentPage - 1)}
-                  disabled={currentPage === 1}
-                >
-                  Previous
-                </button>
-                
-                <div className="pagination-numbers">
-                  {[...Array(totalPages)].map((_, index) => (
-                    <button
-                      key={index}
-                      className={`pagination-number ${currentPage === index + 1 ? 'active' : ''}`}
-                      onClick={() => paginate(index + 1)}
-                    >
-                      {index + 1}
-                    </button>
-                  ))}
-                </div>
-                
-                <button 
-                  className={`pagination-button ${currentPage === totalPages ? 'disabled' : ''}`}
-                  onClick={() => currentPage < totalPages && paginate(currentPage + 1)}
-                  disabled={currentPage === totalPages}
-                >
-                  Next
-                </button>
-              </div>
-            )}
-          </div>
+          </main>
         </div>
       </div>
     </div>
-  );
-};
+  )
+}
 
-export default ShopPage;
+export default ShopPage
+
