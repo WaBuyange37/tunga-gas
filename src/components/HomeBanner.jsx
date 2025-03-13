@@ -13,7 +13,7 @@ const HomeBanner = () => {
             Join thousands of satisfied customers today!
           </p>
           <div className="home-banner-buttons">
-            <Link to="/shop" className="btn btn-outline k">
+            <Link to="/shop" className="btn btn-primary">
               Browse Products
             </Link>
             <Link to="/signup" className="btn btn-primary">
