@@ -18,6 +18,8 @@ import CheckoutPage from "./pages/CheckoutPage"
 import CartPage from "./pages/CartPage"
 import AdminDashboard from "./pages/AdminDashboard"
 import ProtectedRoute from "./components/ProtectedRoute"
+import B2BSection from "./components/B2BSection"
+import B2CSection from "./components/B2CSection"
 
 function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false)
@@ -103,6 +105,8 @@ function App() {
             <Route path="/tracking" element={<TrackingPage />} />
             <Route path="/about" element={<AboutPage />} />
             <Route path="/login" element={isAuthenticated ? <Navigate to="/" /> : <LoginPage login={login} />} />
+            <Route path="/b2b" element={<B2BSection />} />
+            <Route path="/b2c" element={<B2CSection />} />
             <Route
               path="/signup"
               element={isAuthenticated ? <Navigate to="/" /> : <SignupPage setIsAuthenticated={setIsAuthenticated} />}
@@ -139,6 +143,7 @@ function App() {
                 </ProtectedRoute>
               }
             />
+
           </Routes>
         </main>
         <Footer />

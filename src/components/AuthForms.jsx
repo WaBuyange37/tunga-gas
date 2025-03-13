@@ -1,8 +1,15 @@
 "use client"
 
-import React,{ useState } from "react"
-import { useNavigate } from "react-router-dom"
-import "./AuthForms.css"
+import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import "./AuthForms.css";
+import { auth, g_provider, t_provider, db } from "../config/firebase";
+import { createUserWithEmailAndPassword, signInWithEmailAndPassword, signInWithPopup } from "firebase/auth";
+import { addDoc, collection, doc, getDoc, serverTimestamp} from "firebase/firestore";
+import { FcGoogle } from "react-icons/fc";
+import { IoLogoFacebook } from "react-icons/io5";
+import { BsTwitterX } from "react-icons/bs";
+import { ImAppleinc } from "react-icons/im";
 
 const AuthForms = ({ initialTab = "login" }) => {
   const [activeTab, setActiveTab] = useState(initialTab)
@@ -16,8 +23,85 @@ const AuthForms = ({ initialTab = "login" }) => {
   })
   const [errors, setErrors] = useState({})
   const [isLoading, setIsLoading] = useState(false)
+  const [email, setEmail] = useState('')
+  const [password, setPasword] = useState('')
+  const [isLogin, setIsLogin] = useState(true)
+  const [role, setRole] = useState('customer');
 
   const navigate = useNavigate()
+  const collectionRef = collection(db, role === 'customer' ? 'customer' : 'supplier');
+
+  const handleRoleChange = (e) => {
+    setRole(e.target.value)
+  }
+
+  /* const handleFacebookLogin = () => {
+    signInWithPopup(auth, f_provider)
+      .then((userCredential) => {
+        const user = userCredential.user;
+        console.log(user);
+        navigate("/UserDashBoard");
+      })
+      .catch((error) => {
+        console.log(error);
+      })
+  }
+
+  const handleAppleLogin = () => {
+    signInWithPopup(auth, a_provider)
+      .then((userCredential) => {
+        const user = userCredential.user;
+        console.log(user);
+        navigate("/UserDashBoard");
+      })
+      .catch((error) => {
+        console.log(error);
+      })
+  } */
+
+  const handleUserCredential = (userCredential) => {
+    const user = userCredential.user;
+    console.log(user);
+    const userRef = doc(db, role === 'customer' ? 'customer' : 'supplier', user.uid);
+
+    getDoc(userRef).then((docSnap) => {
+      if (docSnap.exists()) {
+        console.log(user);
+        navigate("/UserDashBoard");
+      } else {
+        alert("You're not registered, please signup");
+        navigate("/signup");
+      }
+    }).catch((error) => {
+      console.log("Error getting user document:", error);
+    });
+  }
+
+  const handleGoogleSignIn = () => {
+    signInWithPopup(auth, g_provider)
+      .then((userCredential) => {
+        handleUserCredential(userCredential);
+      })
+      .catch((error) => {
+        console.log(error);
+      })
+
+    setIsLoading(true)
+    /* setTimeout(() => {
+      setIsLoading(false)
+      navigate("/UserDashBoard")
+    }, 5000) */
+  }
+
+  const handleTwitterSignIn = () => {
+    signInWithPopup(auth, t_provider)
+      .then((userCredential) => {
+        handleUserCredential(userCredential);
+      })
+      .catch((error) => {
+        console.log(error);
+      })
+  }
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target
@@ -25,7 +109,15 @@ const AuthForms = ({ initialTab = "login" }) => {
       ...formData,
       [name]: type === "checkbox" ? checked : value,
     })
-
+    if (name === "email") {
+      setEmail(value);
+    } else if (name === "password") {
+      setPasword(value);
+    } else if (name === "fullName") {
+      setFormData({ ...formData, fullName: value });
+    } else if (name === "phone") {
+      setFormData({ ...formData, phone: value });
+    }
     // Clear error when user starts typing
     if (errors[name]) {
       setErrors({
@@ -87,34 +179,103 @@ const AuthForms = ({ initialTab = "login" }) => {
     return Object.keys(newErrors).length === 0
   }
 
-  const handleLoginSubmit = (e) => {
+  const handleLoginSubmit = async (e) => {
     e.preventDefault()
 
     if (validateLoginForm()) {
-      setIsLoading(true)
 
-      // Simulate API call
-      setTimeout(() => {
-        setIsLoading(false)
-        // Redirect to home page after successful login
-        navigate("/")
-      }, 1500)
+      if (isLogin) {
+        signInWithEmailAndPassword(auth, email, password)
+          .then((userCredential) => {
+            handleUserCredential(userCredential);
+          })
+          .catch((error) => {
+            console.log(error);
+            if (error.code === 'auth/invalid-email') {
+              alert("Invalid email / not registered");
+              setActiveTab("signup");
+              setPasword('');
+            } else if (error.code === 'auth/wrong-password') {
+              alert("Wrong password");
+            } else {
+              alert("Something went wrong");
+            }
+            setErrors({
+              msg: error.message
+            });
+          })
+      }
+
+      setIsLoading(true)
     }
+  }
+
+  const storeUserCredentials = async (userCredential) => {
+    const user = userCredential.user; // Get the user from the credentials
+
+    addDoc(collectionRef,{
+      uid: user.uid, // User ID
+      email: user.email, // User email
+      name: formData.fullName,
+      password: formData.password,
+      phone: formData.phone,
+      HasAgreedToTerms: formData.agreeTerms,
+      createdAt: serverTimestamp(), // When the user was created
+      // Add more fields if needed
+    })
+    .then((docref)=>{
+      console.log("User credentials stored successfully");
+      if (role === 'customer') {
+        navigate("/b2c");
+      } else if (role === 'supplier') {
+        navigate("/b2b");
+      }
+    })
+    .catch((err) =>{
+      console.log(err);
+    })
   }
 
   const handleSignupSubmit = (e) => {
     e.preventDefault()
 
     if (validateSignupForm()) {
+      createUserWithEmailAndPassword(auth, email, password)
+        .then((userCredential) => {
+          storeUserCredentials(userCredential);
+        })
+        .catch((err) => {
+          console.log(err);
+        })
       setIsLoading(true)
 
-      // Simulate API call
+      /* // Simulate API call
       setTimeout(() => {
         setIsLoading(false)
         // Redirect to login tab after successful signup
         setActiveTab("login")
-      }, 1500)
+      }, 1500) */
     }
+  }
+
+  const handleGoogleSignUp = (e) => {
+    signInWithPopup(auth, g_provider)
+      .then((userCredential) => {
+        storeUserCredentials(userCredential);
+      })
+      .catch((error) => {
+        console.log(error);
+      })
+  }
+
+  const handleTwitterSignUp = (e) => {
+    signInWithPopup(auth, t_provider)
+      .then((userCredential) => {
+        storeUserCredentials(userCredential);
+      })
+      .catch((error) => {
+        console.log(error);
+      })
   }
 
   return (
@@ -130,6 +291,16 @@ const AuthForms = ({ initialTab = "login" }) => {
 
       {activeTab === "login" ? (
         <form className="auth-form" onSubmit={handleLoginSubmit}>
+          {/* Role selection using a select input */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <label htmlFor="role">Select Role: </label>
+            <select id="role" value={role} onChange={handleRoleChange} style={{ width: '200px', padding: '10px', borderRadius: '5px', border: '1px solid #ccc' }}>
+              <option value="customer" style={{ backgroundColor: 'var(--gray-100)' }}>Customer</option>
+              <option value="supplier" style={{ backgroundColor: 'var(--gray-100)' }}>Supplier</option>
+              {/* Add more roles here if needed */}
+            </select>
+          </div>
+
           <div className="form-group">
             <label htmlFor="email" className="form-label">
               Email
@@ -170,10 +341,36 @@ const AuthForms = ({ initialTab = "login" }) => {
             <p>
               Forgot your password? <button type="button">Reset Password</button>
             </p>
+            or sign in with
+            <div className="social-login" style={{ display: 'flex', justifyContent: 'space-between', margin: '20px 0' }}>
+              <button type="button" className="social-btn google" onClick={handleGoogleSignIn} style={{ fontSize: '30px',/*  backgroundColor: '#db4437', */ color: 'white', padding: '10px 15px' }}>
+                <FcGoogle />
+              </button>
+              <button type="button" className="social-btn facebook" style={{ fontSize: '30px', backgroundColor: '#3b5998', color: 'white', padding: '10px 15px' }}>
+                <IoLogoFacebook />
+              </button>
+              <button type="button" className="social-btn twitter" onClick={handleTwitterSignIn} style={{ fontSize: '20px', backgroundColor: '#000000', color: 'white', padding: '10px 15px' }}>
+                <BsTwitterX />
+              </button>
+              <button type="button" className="social-btn apple" style={{ fontSize: '20px', backgroundColor: '#000000', color: 'white', padding: '10px 15px' }}>
+                <ImAppleinc />
+              </button>
+            </div>
+
           </div>
         </form>
       ) : (
         <form className="auth-form" onSubmit={handleSignupSubmit}>
+          {/* Role selection using a select input */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <label htmlFor="role">Select Role: </label>
+            <select id="role" value={role} onChange={handleRoleChange} style={{ width: '200px', padding: '10px', borderRadius: '5px', border: '1px solid #ccc' }}>
+              <option value="customer" style={{ backgroundColor: 'orange' }}>Customer</option>
+              <option value="supplier" style={{ backgroundColor: 'orange' }}>Supplier</option>
+              {/* Add more roles here if needed */}
+            </select>
+          </div>
+
           <div className="form-group">
             <label htmlFor="fullName" className="form-label">
               Full Name
@@ -267,6 +464,24 @@ const AuthForms = ({ initialTab = "login" }) => {
             <button type="submit" className="btn btn-primary w-full" disabled={isLoading}>
               {isLoading ? "Creating Account..." : "Create Account"}
             </button>
+          </div>
+
+          <div className="auth-footer">
+            or sign up with
+            <div className="social-login" style={{ display: 'flex', justifyContent: 'space-between', margin: '20px 0' }}>
+              <button type="button" className="social-btn google" onClick={handleGoogleSignUp} style={{ fontSize: '30px',/*  backgroundColor: '#db4437', */ color: 'white', padding: '10px 15px' }}>
+                <FcGoogle />
+              </button>
+              <button type="button" className="social-btn facebook" style={{ fontSize: '30px', backgroundColor: '#3b5998', color: 'white', padding: '10px 15px' }}>
+                <IoLogoFacebook />
+              </button>
+              <button type="button" className="social-btn twitter" onClick={handleTwitterSignUp} style={{ fontSize: '20px', backgroundColor: '#000000', color: 'white', padding: '10px 15px' }}>
+                <BsTwitterX />
+              </button>
+              <button type="button" className="social-btn apple" style={{ fontSize: '20px', backgroundColor: '#000000', color: 'white', padding: '10px 15px' }}>
+                <ImAppleinc />
+              </button>
+            </div>
           </div>
         </form>
       )}

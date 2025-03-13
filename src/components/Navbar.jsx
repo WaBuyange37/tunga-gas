@@ -6,8 +6,8 @@ import { FaGasPump, FaBars, FaTimes, FaUser, FaShoppingCart } from "react-icons/
 import "./Navbar.css"
 
 const Navbar = () => {
-  const [isMenuOpen, setIsMenuOpen] = useState(!false)
-  const [isLoggedIn, setIsLoggedIn] = useState(!false)
+  const [isMenuOpen, setIsMenuOpen] = useState(false)
+  const [isLoggedIn, setIsLoggedIn] = useState(false)
   const [cartItems, setCartItems] = useState([])
   const location = useLocation()
 
