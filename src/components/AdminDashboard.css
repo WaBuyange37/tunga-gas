@@ -50,6 +50,13 @@
   border-radius: var(--border-radius);
   color: var(--gray-400);
   transition: var(--transition);
+  text-decoration: none;
+  width: 100%;
+  text-align: left;
+  background: none;
+  border: none;
+  font-size: 1rem;
+  cursor: pointer;
 }
 
 .admin-menu-link:hover {
@@ -64,6 +71,14 @@
 
 .admin-menu-icon {
   margin-right: 0.75rem;
+}
+
+.logout-link {
+  color: #ff6b6b;
+}
+
+.logout-link:hover {
+  background-color: rgba(255, 107, 107, 0.1);
 }
 
 .admin-main {

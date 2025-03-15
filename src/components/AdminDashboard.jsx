@@ -1,3 +1,5 @@
+"use client"
+
 import {
   FaHome,
   FaBox,
@@ -6,13 +8,16 @@ import {
   FaCreditCard,
   FaCog,
   FaSignOutAlt,
-  FaGasPump, // Using FaGasPump instead of FaCylinder which doesn't exist
+  FaGasPump,
   FaWarehouse,
   FaChartLine,
   FaClipboardList,
 } from "react-icons/fa"
-import "./AdminDashboard.css"
+import { Link } from "react-router-dom"
 import React from "react"
+import { signOut } from "firebase/auth"
+import { auth } from "../config/firebase"
+import "./AdminDashboard.css"
 
 const AdminDashboard = () => {
   const stats = [
@@ -45,40 +50,49 @@ const AdminDashboard = () => {
   const recentOrders = [
     {
       id: "ORD-7829",
-      customer: "Kwizera Mugisha",
+      customer: "John Doe",
       date: "2023-05-15",
       amount: "RWF 24,000",
       status: "Delivered",
     },
     {
       id: "ORD-7830",
-      customer: "Ivan Khalifa",
+      customer: "Jane Smith",
       date: "2023-05-15",
       amount: "RWF 36,000",
       status: "Processing",
     },
     {
       id: "ORD-7831",
-      customer: "Paul Irankunda",
+      customer: "Robert Johnson",
       date: "2023-05-14",
       amount: "RWF 15,000",
       status: "Delivered",
     },
     {
       id: "ORD-7832",
-      customer: "Hitimana",
+      customer: "Emily Williams",
       date: "2023-05-14",
       amount: "RWF 42,000",
       status: "Pending",
     },
     {
       id: "ORD-7833",
-      customer: "Michael Rukunda",
+      customer: "Michael Brown",
       date: "2023-05-13",
       amount: "RWF 28,000",
       status: "Delivered",
     },
   ]
+
+  const handleLogout = async () => {
+    try {
+      await signOut(auth)
+      // Redirect will happen automatically due to auth state change
+    } catch (error) {
+      console.error("Error signing out:", error)
+    }
+  }
 
   return (
     <div className="admin-dashboard">
@@ -90,46 +104,46 @@ const AdminDashboard = () => {
           </div>
           <ul className="admin-menu">
             <li className="admin-menu-item">
-              <a href="#" className="admin-menu-link active">
+              <Link to="/admin" className="admin-menu-link active">
                 <FaHome className="admin-menu-icon" />
                 Dashboard
-              </a>
+              </Link>
             </li>
             <li className="admin-menu-item">
-              <a href="#" className="admin-menu-link">
+              <Link to="/admin/products" className="admin-menu-link">
                 <FaBox className="admin-menu-icon" />
                 Products
-              </a>
+              </Link>
             </li>
             <li className="admin-menu-item">
-              <a href="#" className="admin-menu-link">
+              <Link to="/admin/customers" className="admin-menu-link">
                 <FaUsers className="admin-menu-icon" />
                 Customers
-              </a>
+              </Link>
             </li>
             <li className="admin-menu-item">
-              <a href="#" className="admin-menu-link">
+              <Link to="/admin/orders" className="admin-menu-link">
                 <FaTruck className="admin-menu-icon" />
                 Orders
-              </a>
+              </Link>
             </li>
             <li className="admin-menu-item">
-              <a href="#" className="admin-menu-link">
+              <Link to="/admin/transactions" className="admin-menu-link">
                 <FaCreditCard className="admin-menu-icon" />
                 Transactions
-              </a>
+              </Link>
             </li>
             <li className="admin-menu-item">
-              <a href="#" className="admin-menu-link">
+              <Link to="/admin/settings" className="admin-menu-link">
                 <FaCog className="admin-menu-icon" />
                 Settings
-              </a>
+              </Link>
             </li>
             <li className="admin-menu-item">
-              <a href="#" className="admin-menu-link">
+              <button onClick={handleLogout} className="admin-menu-link logout-link">
                 <FaSignOutAlt className="admin-menu-icon" />
                 Logout
-              </a>
+              </button>
             </li>
           </ul>
         </div>
@@ -137,7 +151,7 @@ const AdminDashboard = () => {
           <div className="admin-header">
             <h1 className="admin-title">Dashboard</h1>
             <div className="admin-user">
-              <span>Mugisha</span>
+              <span>Admin User</span>
               <img src="/placeholder.svg?height=40&width=40" alt="Admin" className="admin-avatar" />
             </div>
           </div>

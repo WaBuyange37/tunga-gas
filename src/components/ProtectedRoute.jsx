@@ -1,12 +1,14 @@
-import { Navigate } from "react-router-dom"
 import React from "react"
-const ProtectedRoute = ({ children }) => {
-  // Check if user is authenticated
-  const isAuthenticated = localStorage.getItem("isAuthenticated") === "true"
+import { Navigate } from "react-router-dom"
 
-  if (!isAuthenticated) {
-    // Redirect to login page if not authenticated
+const ProtectedRoute = ({ user, adminOnly = false, children }) => {
+  if (!user) {
     return <Navigate to="/login" />
+  }
+
+  // Check if route requires admin access
+  if (adminOnly && user.email !== "admin@tungagas.com") {
+    return <Navigate to="/" />
   }
 
   return children
