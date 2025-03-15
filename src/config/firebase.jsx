@@ -2,6 +2,7 @@ import { initializeApp } from "firebase/app";
 import { getAuth, GoogleAuthProvider , TwitterAuthProvider} from "firebase/auth";
 import { getFirestore } from "firebase/firestore";
 
+
 const firebaseConfig = {
   apiKey: "AIzaSyBjr5FymfcZ9T6gHOU3pfzlyWnO1pvEang",
   authDomain: "tungagas-f744d.firebaseapp.com",

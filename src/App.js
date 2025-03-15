@@ -1,7 +1,9 @@
 "use client"
 
-import React,{ useState, useEffect } from "react"
+import React, { useState, useEffect } from "react"
 import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom"
+import { auth } from "./config/firebase"
+import { onAuthStateChanged } from "firebase/auth"
 import "./App.css"
 
 // Components
@@ -16,15 +18,25 @@ import LoginPage from "./pages/LoginPage"
 import SignupPage from "./pages/SignupPage"
 import CheckoutPage from "./pages/CheckoutPage"
 import CartPage from "./pages/CartPage"
+import ProfilePage from "./pages/ProfilePage"
+import WishlistPage from "./pages/WishlistPage"
 import AdminDashboard from "./pages/AdminDashboard"
 import ProtectedRoute from "./components/ProtectedRoute"
-import B2BSection from "./components/B2BSection"
-import B2CSection from "./components/B2CSection"
 
 function App() {
-  const [isAuthenticated, setIsAuthenticated] = useState(false)
-  const [isAdmin, setIsAdmin] = useState(false)
+  const [currentUser, setCurrentUser] = useState(null)
+  const [loading, setLoading] = useState(true)
   const [cart, setCart] = useState([])
+
+  // Check authentication state
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      setCurrentUser(user)
+      setLoading(false)
+    })
+
+    return () => unsubscribe()
+  }, [])
 
   // Load cart from localStorage on initial render
   useEffect(() => {
@@ -44,25 +56,6 @@ function App() {
     // Dispatch event for other components to update
     window.dispatchEvent(new Event("cartUpdated"))
   }, [cart])
-
-  const login = (email, password) => {
-    // In a real app, this would validate credentials with a backend
-    if (email === "admin@tungagas.com" && password === "admin123") {
-      setIsAuthenticated(true)
-      setIsAdmin(true)
-      return true
-    } else if (email && password) {
-      setIsAuthenticated(true)
-      setIsAdmin(false)
-      return true
-    }
-    return false
-  }
-
-  const logout = () => {
-    setIsAuthenticated(false)
-    setIsAdmin(false)
-  }
 
   const addToCart = (product, quantity = 1) => {
     const existingItem = cart.find((item) => item.id === product.id)
@@ -88,29 +81,35 @@ function App() {
     setCart([])
   }
 
+  if (loading) {
+    return (
+      <div className="loading-container">
+        <div className="spinner"></div>
+        <p>Loading...</p>
+      </div>
+    )
+  }
+
   return (
     <Router>
       <div className="app">
-        <Navbar
-          isAuthenticated={isAuthenticated}
-          isAdmin={isAdmin}
-          logout={logout}
-          cartItemsCount={cart.reduce((total, item) => total + item.quantity, 0)}
-        />
+        <Navbar />
         <main className="main">
           <Routes>
             <Route path="/" element={<HomePage addToCart={addToCart} />} />
             <Route path="/shop" element={<ShopPage addToCart={addToCart} />} />
             <Route path="/suppliers" element={<SuppliersPage />} />
-            <Route path="/tracking" element={<TrackingPage />} />
-            <Route path="/about" element={<AboutPage />} />
-            <Route path="/login" element={isAuthenticated ? <Navigate to="/" /> : <LoginPage login={login} />} />
-            <Route path="/b2b" element={<B2BSection />} />
-            <Route path="/b2c" element={<B2CSection />} />
             <Route
-              path="/signup"
-              element={isAuthenticated ? <Navigate to="/" /> : <SignupPage setIsAuthenticated={setIsAuthenticated} />}
+              path="/tracking"
+              element={
+                <ProtectedRoute user={currentUser}>
+                  <TrackingPage />
+                </ProtectedRoute>
+              }
             />
+            <Route path="/about" element={<AboutPage />} />
+            <Route path="/login" element={currentUser ? <Navigate to="/shop" /> : <LoginPage />} />
+            <Route path="/signup" element={currentUser ? <Navigate to="/shop" /> : <SignupPage />} />
             <Route
               path="/cart"
               element={
@@ -125,7 +124,7 @@ function App() {
             <Route
               path="/checkout"
               element={
-                <ProtectedRoute isAuthenticated={isAuthenticated}>
+                <ProtectedRoute user={currentUser}>
                   <CheckoutPage
                     cart={cart}
                     removeFromCart={removeFromCart}
@@ -136,14 +135,29 @@ function App() {
               }
             />
             <Route
+              path="/profile"
+              element={
+                <ProtectedRoute user={currentUser}>
+                  <ProfilePage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/wishlist"
+              element={
+                <ProtectedRoute user={currentUser}>
+                  <WishlistPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
               path="/admin/*"
               element={
-                <ProtectedRoute isAuthenticated={isAuthenticated && isAdmin}>
+                <ProtectedRoute user={currentUser} adminOnly={true}>
                   <AdminDashboard />
                 </ProtectedRoute>
               }
             />
-
           </Routes>
         </main>
         <Footer />

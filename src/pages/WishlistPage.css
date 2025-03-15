@@ -1,0 +1,127 @@
+.wishlist-page {
+  padding: 2rem 0;
+  min-height: calc(100vh - 200px);
+}
+
+.wishlist-title {
+  margin-bottom: 2rem;
+  text-align: center;
+}
+
+.wishlist-items {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1.5rem;
+}
+
+.wishlist-item {
+  display: flex;
+  background-color: white;
+  border-radius: var(--border-radius);
+  box-shadow: var(--box-shadow);
+  overflow: hidden;
+  transition: var(--transition);
+}
+
+.wishlist-item:hover {
+  transform: translateY(-5px);
+  box-shadow: var(--box-shadow-md);
+}
+
+.wishlist-item-image {
+  width: 150px;
+  height: 150px;
+  flex-shrink: 0;
+}
+
+.wishlist-item-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.wishlist-item-details {
+  padding: 1.5rem;
+  flex: 1;
+}
+
+.wishlist-item-name {
+  font-size: 1.25rem;
+  margin-bottom: 0.5rem;
+}
+
+.wishlist-item-price {
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: var(--primary);
+  margin-bottom: 1rem;
+}
+
+.wishlist-item-actions {
+  display: flex;
+  gap: 1rem;
+}
+
+.empty-wishlist {
+  text-align: center;
+  padding: 4rem 2rem;
+  background-color: white;
+  border-radius: var(--border-radius);
+  box-shadow: var(--box-shadow);
+}
+
+.empty-wishlist-icon {
+  font-size: 4rem;
+  color: var(--primary);
+  margin-bottom: 1.5rem;
+  opacity: 0.5;
+}
+
+.empty-wishlist h2 {
+  font-size: 1.5rem;
+  margin-bottom: 1rem;
+}
+
+.empty-wishlist p {
+  color: var(--gray-600);
+  margin-bottom: 2rem;
+}
+
+.notification {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  padding: 1rem 1.5rem;
+  border-radius: var(--border-radius);
+  background-color: #10b981;
+  color: white;
+  z-index: 1000;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  animation: slideIn 0.3s ease-out forwards;
+}
+
+.notification.info {
+  background-color: #3b82f6;
+}
+
+.notification.error {
+  background-color: #ef4444;
+}
+
+@keyframes slideIn {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+@media (min-width: 768px) {
+  .wishlist-items {
+    grid-template-columns: repeat(auto-fill, minmax(500px, 1fr));
+  }
+}
+
