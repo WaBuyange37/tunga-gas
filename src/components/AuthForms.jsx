@@ -5,7 +5,7 @@ import { useNavigate } from "react-router-dom";
 import "./AuthForms.css";
 import { auth, g_provider, t_provider, db } from "../config/firebase";
 import { createUserWithEmailAndPassword, signInWithEmailAndPassword, signInWithPopup } from "firebase/auth";
-import { addDoc, collection, doc, getDoc, serverTimestamp} from "firebase/firestore";
+import { addDoc, collection, doc, getDoc, serverTimestamp } from "firebase/firestore";
 import { FcGoogle } from "react-icons/fc";
 import { IoLogoFacebook } from "react-icons/io5";
 import { BsTwitterX } from "react-icons/bs";
@@ -27,6 +27,7 @@ const AuthForms = ({ initialTab = "login" }) => {
   const [password, setPasword] = useState('')
   const [isLogin, setIsLogin] = useState(true)
   const [role, setRole] = useState('customer');
+  const [showModal, setShowModal] = useState(false);
 
   const navigate = useNavigate()
   const collectionRef = collection(db, role === 'customer' ? 'customer' : 'supplier');
@@ -75,6 +76,60 @@ const AuthForms = ({ initialTab = "login" }) => {
     }).catch((error) => {
       console.log("Error getting user document:", error);
     });
+  }
+
+  const handleAuth = async (e, provider) => {
+    setErrors('');
+    e.preventDefault();
+
+    if (provider === 'google' || provider === 'twitter') {
+      const providerToUse = (provider === 'google') ? g_provider : t_provider;
+      signInWithPopup(auth, providerToUse)
+        .then((userCredential) => {
+          handleUserCredential(userCredential);
+        })
+        .catch((error) => {
+          console.log(error);
+        });
+    }
+
+    else if (provider === 'email') {
+
+      if (validateForm(e, false)) {
+        signInWithEmailAndPassword(auth, email, password)
+          .then((userCredential) => {
+            handleUserCredential(userCredential);
+          })
+          .catch((error) => {
+            console.log(error);
+            if (error.code === 'auth/invalid-email') {
+              alert("Invalid email / not registered");
+              setActiveTab("signup");
+              setPasword('');
+            } else if (error.code === 'auth/wrong-password') {
+              alert("Wrong password");
+            } else {
+              alert("Something went wrong");
+            }
+            setErrors({
+              msg: error.message
+            });
+          })
+      }
+    }
+    
+    else if (provider === 's_email') {
+      if (validateForm(e, true)) {
+        createUserWithEmailAndPassword(auth, email, password)
+          .then((userCredential) => {
+            storeUserCredentials(userCredential);
+          })
+          .catch((err) => {
+            console.log(err);
+          })
+      }
+    }
+
   }
 
   const handleGoogleSignIn = () => {
@@ -127,28 +182,14 @@ const AuthForms = ({ initialTab = "login" }) => {
     }
   }
 
-  const validateLoginForm = () => {
+  const validateForm = (e, isSignup) => {
+    e.preventDefault();
     const newErrors = {}
 
-    if (!formData.email) {
-      newErrors.email = "Email is required"
-    } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
-      newErrors.email = "Email is invalid"
-    }
-
-    if (!formData.password) {
-      newErrors.password = "Password is required"
-    }
-
-    setErrors(newErrors)
-    return Object.keys(newErrors).length === 0
-  }
-
-  const validateSignupForm = () => {
-    const newErrors = {}
-
-    if (!formData.fullName) {
-      newErrors.fullName = "Full name is required"
+    if (isSignup) {
+      if (!formData.fullName) {
+        newErrors.fullName = "Full name is required"
+      }
     }
 
     if (!formData.email) {
@@ -157,8 +198,10 @@ const AuthForms = ({ initialTab = "login" }) => {
       newErrors.email = "Email is invalid"
     }
 
-    if (!formData.phone) {
-      newErrors.phone = "Phone number is required"
+    if (isSignup) {
+      if (!formData.phone) {
+        newErrors.phone = "Phone number is required"
+      }
     }
 
     if (!formData.password) {
@@ -167,11 +210,11 @@ const AuthForms = ({ initialTab = "login" }) => {
       newErrors.password = "Password must be at least 6 characters"
     }
 
-    if (formData.password !== formData.confirmPassword) {
+    if (isSignup && formData.password !== formData.confirmPassword) {
       newErrors.confirmPassword = "Passwords do not match"
     }
 
-    if (!formData.agreeTerms) {
+    if (isSignup && !formData.agreeTerms) {
       newErrors.agreeTerms = "You must agree to the terms and conditions"
     }
 
@@ -182,7 +225,7 @@ const AuthForms = ({ initialTab = "login" }) => {
   const handleLoginSubmit = async (e) => {
     e.preventDefault()
 
-    if (validateLoginForm()) {
+    if (validateForm(false)) {
 
       if (isLogin) {
         signInWithEmailAndPassword(auth, email, password)
@@ -213,7 +256,7 @@ const AuthForms = ({ initialTab = "login" }) => {
   const storeUserCredentials = async (userCredential) => {
     const user = userCredential.user; // Get the user from the credentials
 
-    addDoc(collectionRef,{
+    addDoc(collectionRef, {
       uid: user.uid, // User ID
       email: user.email, // User email
       name: formData.fullName,
@@ -223,23 +266,23 @@ const AuthForms = ({ initialTab = "login" }) => {
       createdAt: serverTimestamp(), // When the user was created
       // Add more fields if needed
     })
-    .then((docref)=>{
-      console.log("User credentials stored successfully");
-      if (role === 'customer') {
-        navigate("/b2c");
-      } else if (role === 'supplier') {
-        navigate("/b2b");
-      }
-    })
-    .catch((err) =>{
-      console.log(err);
-    })
+      .then((docref) => {
+        console.log("User credentials stored successfully");
+        if (role === 'customer') {
+          navigate("/b2c");
+        } else if (role === 'supplier') {
+          navigate("/b2b");
+        }
+      })
+      .catch((err) => {
+        console.log(err);
+      })
   }
 
   const handleSignupSubmit = (e) => {
     e.preventDefault()
 
-    if (validateSignupForm()) {
+    if (validateForm(true)) {
       createUserWithEmailAndPassword(auth, email, password)
         .then((userCredential) => {
           storeUserCredentials(userCredential);
