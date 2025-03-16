@@ -97,7 +97,8 @@
   gap: 0.5rem;
   padding: 0.75rem;
   border-radius: var(--border-radius);
-  font-weight: 500;
+  font-weight: 600;
+  font-size: large;
   cursor: pointer;
   transition: var(--transition);
   border: 1px solid var(--gray-200);
@@ -109,11 +110,11 @@
 }
 
 .google-btn {
-  color: #4285f4;
+  color: #000000;
 }
 
 .twitter-btn {
-  color: #1da1f2;
+  color: #000508;
 }
 
 .password-reset-form,

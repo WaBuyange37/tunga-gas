@@ -1,31 +1,14 @@
-"use client"
+"use client";
 
-<<<<<<< HEAD
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import "./AuthForms.css";
 import { auth, g_provider, t_provider, db } from "../config/firebase";
-import { createUserWithEmailAndPassword, signInWithEmailAndPassword, signInWithPopup } from "firebase/auth";
-import { addDoc, collection, doc, getDoc, serverTimestamp } from "firebase/firestore";
+import { doc, serverTimestamp, setDoc , getDoc} from "firebase/firestore";
 import { FcGoogle } from "react-icons/fc";
-import { IoLogoFacebook } from "react-icons/io5";
 import { BsTwitterX } from "react-icons/bs";
-import { ImAppleinc } from "react-icons/im";
-=======
-import React,{ useState, useEffect } from "react"
-import { useNavigate } from "react-router-dom"
-import {
-  createUserWithEmailAndPassword,
-  signInWithEmailAndPassword,
-  signInWithPopup,
-  updateProfile,
-  sendPasswordResetEmail,
-} from "firebase/auth"
-import { doc, setDoc, serverTimestamp } from "firebase/firestore"
-import { auth, g_provider, t_provider, db } from "../config/firebase"
-import { FaGoogle, FaTwitter, FaEnvelope } from "react-icons/fa"
-import "./AuthForms.css"
->>>>>>> a99cfcfb4f027eeb5fa80c885a43ad8fbea6eba9
+import { FaEnvelope } from "react-icons/fa"
+import { createUserWithEmailAndPassword, signInWithEmailAndPassword, signInWithPopup, updateProfile, sendPasswordResetEmail, } from "firebase/auth";
 
 const AuthForms = ({ initialTab = "login" }) => {
   const [activeTab, setActiveTab] = useState(initialTab)
@@ -39,17 +22,10 @@ const AuthForms = ({ initialTab = "login" }) => {
   })
   const [errors, setErrors] = useState({})
   const [isLoading, setIsLoading] = useState(false)
-<<<<<<< HEAD
-  const [email, setEmail] = useState('')
-  const [password, setPasword] = useState('')
-  const [isLogin, setIsLogin] = useState(true)
   const [role, setRole] = useState('customer');
-  const [showModal, setShowModal] = useState(false);
-=======
   const [authError, setAuthError] = useState("")
   const [resetSent, setResetSent] = useState(false)
   const [resetEmail, setResetEmail] = useState("")
->>>>>>> a99cfcfb4f027eeb5fa80c885a43ad8fbea6eba9
 
   const navigate = useNavigate()
 
@@ -60,19 +36,67 @@ const AuthForms = ({ initialTab = "login" }) => {
         navigate("/shop")
       }
     })
+    return () => unsubscribe()
+  }, [navigate]);
 
-<<<<<<< HEAD
+  const setErrorMessages = (err) => {
+    let msg;
+    switch (err) {
+      case 'auth/invalid-email':
+        msg = 'Invalid email format. Please check your email.'
+        break;
+      case 'auth/user-not-found':
+        msg = "No user found with that email.  Please check or create an account.";
+        break;
+      case 'auth/user-disabled':
+        msg = "Your account has been disabled. Please contact support.";
+        break;
+      case 'auth/wrong-password':
+        msg = "Incorrect password. Please try again, or reset your password.";
+        break;
+      case 'auth/network-request-failed':
+        msg = "We're having trouble connecting to the server. Please check your internet connection and try again later.";
+        break;
+      case 'auth/too-many-requests':
+        msg = 'Too many login attempts. Please try again in a few minutes.';
+        break;
+      case 'auth/account-exists-with-different-credential':
+        msg = "This email address is already registered with a different account type.";
+        break;
+      case 'firebase.auth.Error':
+        msg = "We're having trouble sending the password reset email. Please try again later.";
+        break;
+      case 'auth/weak-password':
+        msg = "Password is too weak";
+        break;
+      case 'auth/email-already-in-use':
+        msg = "Email is already in use, use another email or login to your account.";
+        break;
+      case 'auth/invalid-credential':
+        msg = "Invalid login credentials. Please double-check your email and password and try again.";
+        break;
+        
+      default:
+        msg = "An unexpected error occurred. Please try again later.";
+        break;
+    }
+    return msg;
+  }
+
   const handleAuth = async (e, provider) => {
     setErrors('');
+    setIsLoading(true)
+    setAuthError("")
     e.preventDefault();
 
     if (provider === 'google' || provider === 'twitter') {
       const providerToUse = (provider === 'google') ? g_provider : t_provider;
       signInWithPopup(auth, providerToUse)
         .then((userCredential) => {
-          handleUserCredential(userCredential);
+          handleUser(userCredential, false);
         })
         .catch((error) => {
+          setAuthError(setErrorMessages(error.code));
           console.log(error);
         });
     }
@@ -80,71 +104,39 @@ const AuthForms = ({ initialTab = "login" }) => {
     else if (provider === 'email') {
 
       if (validateForm(e, false)) {
-        signInWithEmailAndPassword(auth, email, password)
+        signInWithEmailAndPassword(auth, formData.email, formData.password)
           .then((userCredential) => {
-            handleUserCredential(userCredential);
+            handleUser(userCredential, false);
           })
           .catch((error) => {
+            setAuthError(setErrorMessages(error.code));
             console.log(error);
-            if (error.code === 'auth/invalid-email') {
-              alert("Invalid email / not registered");
-              setActiveTab("signup");
-              setPasword('');
-            } else if (error.code === 'auth/wrong-password') {
-              alert("Wrong password");
-            } else {
-              alert("Something went wrong");
-            }
             setErrors({
               msg: error.message
             });
           })
       }
     }
-    
+
     else if (provider === 's_email') {
       if (validateForm(e, true)) {
-        createUserWithEmailAndPassword(auth, email, password)
+        createUserWithEmailAndPassword(auth, formData.email, formData.password)
           .then((userCredential) => {
-            storeUserCredentials(userCredential);
+            handleUser(userCredential, true);
+            
+            updateProfile(userCredential.user, {
+              displayName: formData.fullName,
+            });
+
+
           })
-          .catch((err) => {
-            console.log(err);
+          .catch((error) => {
+            setAuthError(setErrorMessages(error.code));
           })
       }
     }
 
   }
-
-  const handleGoogleSignIn = () => {
-    signInWithPopup(auth, g_provider)
-      .then((userCredential) => {
-        handleUserCredential(userCredential);
-      })
-      .catch((error) => {
-        console.log(error);
-      })
-
-    setIsLoading(true)
-    /* setTimeout(() => {
-      setIsLoading(false)
-      navigate("/UserDashBoard")
-    }, 5000) */
-  }
-
-  const handleTwitterSignIn = () => {
-    signInWithPopup(auth, t_provider)
-      .then((userCredential) => {
-        handleUserCredential(userCredential);
-      })
-      .catch((error) => {
-        console.log(error);
-      })
-  }
-=======
-    return () => unsubscribe()
-  }, [navigate])
->>>>>>> a99cfcfb4f027eeb5fa80c885a43ad8fbea6eba9
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target
@@ -169,6 +161,8 @@ const AuthForms = ({ initialTab = "login" }) => {
 
   const validateForm = (e, isSignup) => {
     e.preventDefault();
+    setIsLoading(true)
+    setAuthError("")
     const newErrors = {}
 
     if (isSignup) {
@@ -207,73 +201,25 @@ const AuthForms = ({ initialTab = "login" }) => {
     return Object.keys(newErrors).length === 0
   }
 
-  const handleLoginSubmit = async (e) => {
-    e.preventDefault()
+  const handleUser = async (userCredential, isNew) => {
 
-<<<<<<< HEAD
-    if (validateForm(false)) {
-
-      if (isLogin) {
-        signInWithEmailAndPassword(auth, email, password)
-          .then((userCredential) => {
-            handleUserCredential(userCredential);
-          })
-          .catch((error) => {
-            console.log(error);
-            if (error.code === 'auth/invalid-email') {
-              alert("Invalid email / not registered");
-              setActiveTab("signup");
-              setPasword('');
-            } else if (error.code === 'auth/wrong-password') {
-              alert("Wrong password");
-            } else {
-              alert("Something went wrong");
-            }
-            setErrors({
-              msg: error.message
-            });
-          })
-      }
-
-=======
-    if (validateLoginForm()) {
->>>>>>> a99cfcfb4f027eeb5fa80c885a43ad8fbea6eba9
-      setIsLoading(true)
-      setAuthError("")
-
-      try {
-        await signInWithEmailAndPassword(auth, formData.email, formData.password)
-        // No need to navigate here as the useEffect will handle it
-      } catch (error) {
-        console.error("Login error:", error)
-
-        // Handle specific error codes
-        if (error.code === "auth/user-not-found" || error.code === "auth/wrong-password") {
-          setAuthError("Invalid email or password")
-        } else if (error.code === "auth/too-many-requests") {
-          setAuthError("Too many failed login attempts. Please try again later")
-        } else {
-          setAuthError("An error occurred during login. Please try again")
-        }
-
-        setIsLoading(false)
+    if (!isNew) {
+      const userDoc = await getDoc(doc(db, "customer", userCredential.user.uid));
+      if (userDoc.exists()) {
+        return; // User found, do nothing
+      } else {
+        setActiveTab("signup"); // User not found, switch to signup
       }
     }
-  }
 
-<<<<<<< HEAD
-  const storeUserCredentials = async (userCredential) => {
-    const user = userCredential.user; // Get the user from the credentials
-
-    addDoc(collectionRef, {
-      uid: user.uid, // User ID
-      email: user.email, // User email
-      name: formData.fullName,
-      password: formData.password,
-      phone: formData.phone,
-      HasAgreedToTerms: formData.agreeTerms,
-      createdAt: serverTimestamp(), // When the user was created
-      // Add more fields if needed
+    setDoc(doc(db, "customer", userCredential.user.uid), {
+      Name: formData.fullName,
+      Email: formData.email,
+      Phone: formData.phone,
+      Password: formData.password,
+      CreatedAt: serverTimestamp(),
+      Role: "customer", // Default role
+      HasAgreedToTerms: formData.agreeTerms
     })
       .then((docref) => {
         console.log("User credentials stored successfully");
@@ -286,90 +232,6 @@ const AuthForms = ({ initialTab = "login" }) => {
       .catch((err) => {
         console.log(err);
       })
-  }
-
-  const handleSignupSubmit = (e) => {
-    e.preventDefault()
-
-    if (validateForm(true)) {
-      createUserWithEmailAndPassword(auth, email, password)
-        .then((userCredential) => {
-          storeUserCredentials(userCredential);
-        })
-        .catch((err) => {
-          console.log(err);
-        })
-=======
-  const handleSignupSubmit = async (e) => {
-    e.preventDefault()
-
-    if (validateSignupForm()) {
->>>>>>> a99cfcfb4f027eeb5fa80c885a43ad8fbea6eba9
-      setIsLoading(true)
-      setAuthError("")
-
-      try {
-        // Create user with email and password
-        const userCredential = await createUserWithEmailAndPassword(auth, formData.email, formData.password)
-
-        // Update profile with display name
-        await updateProfile(userCredential.user, {
-          displayName: formData.fullName,
-        })
-
-        // Store additional user data in Firestore
-        await setDoc(doc(db, "users", userCredential.user.uid), {
-          fullName: formData.fullName,
-          email: formData.email,
-          phone: formData.phone,
-          createdAt: serverTimestamp(),
-          role: "customer", // Default role
-        })
-
-        // No need to navigate here as the useEffect will handle it
-      } catch (error) {
-        console.error("Signup error:", error)
-
-        // Handle specific error codes
-        if (error.code === "auth/email-already-in-use") {
-          setAuthError("Email is already in use")
-        } else if (error.code === "auth/weak-password") {
-          setAuthError("Password is too weak")
-        } else {
-          setAuthError("An error occurred during signup. Please try again")
-        }
-
-        setIsLoading(false)
-      }
-    }
-  }
-
-  const handleGoogleSignIn = async () => {
-    setIsLoading(true)
-    setAuthError("")
-
-    try {
-      await signInWithPopup(auth, g_provider)
-      // No need to navigate here as the useEffect will handle it
-    } catch (error) {
-      console.error("Google sign-in error:", error)
-      setAuthError("An error occurred during Google sign-in. Please try again")
-      setIsLoading(false)
-    }
-  }
-
-  const handleTwitterSignIn = async () => {
-    setIsLoading(true)
-    setAuthError("")
-
-    try {
-      await signInWithPopup(auth, t_provider)
-      // No need to navigate here as the useEffect will handle it
-    } catch (error) {
-      console.error("Twitter sign-in error:", error)
-      setAuthError("An error occurred during Twitter sign-in. Please try again")
-      setIsLoading(false)
-    }
   }
 
   const handlePasswordReset = async (e) => {
@@ -420,7 +282,7 @@ const AuthForms = ({ initialTab = "login" }) => {
 
           {activeTab === "login" ? (
             <>
-              <form className="auth-form" onSubmit={handleLoginSubmit}>
+              <form className="auth-form" onSubmit={(e)=>{handleAuth(e, 'email')}}>
                 <div className="form-group">
                   <label htmlFor="email" className="form-label">
                     Email
@@ -466,18 +328,18 @@ const AuthForms = ({ initialTab = "login" }) => {
                   <button
                     type="button"
                     className="social-btn google-btn"
-                    onClick={handleGoogleSignIn}
+                    onClick={(e) => { handleAuth(e, 'google') }}
                     disabled={isLoading}
                   >
-                    <FaGoogle /> Google
+                    <FcGoogle /> Google
                   </button>
                   <button
                     type="button"
                     className="social-btn twitter-btn"
-                    onClick={handleTwitterSignIn}
+                    onClick={(e) => { handleAuth(e, 'twitter') }}
                     disabled={isLoading}
                   >
-                    <FaTwitter /> Twitter
+                    <BsTwitterX /> Twitter
                   </button>
                 </div>
               </div>
@@ -492,7 +354,7 @@ const AuthForms = ({ initialTab = "login" }) => {
               </div>
             </>
           ) : (
-            <form className="auth-form" onSubmit={handleSignupSubmit}>
+            <form className="auth-form" onSubmit={(e)=>{handleAuth(e, 's_email')}}>
               <div className="form-group">
                 <label htmlFor="fullName" className="form-label">
                   Full Name
@@ -596,18 +458,18 @@ const AuthForms = ({ initialTab = "login" }) => {
                   <button
                     type="button"
                     className="social-btn google-btn"
-                    onClick={handleGoogleSignIn}
+                    onClick={(e) => { handleAuth(e, 'google') }}
                     disabled={isLoading}
                   >
-                    <FaGoogle /> Google
+                    <FcGoogle /> Google
                   </button>
                   <button
                     type="button"
                     className="social-btn twitter-btn"
-                    onClick={handleTwitterSignIn}
+                    onClick={(e) => { handleAuth(e, 'twitter') }}
                     disabled={isLoading}
                   >
-                    <FaTwitter /> Twitter
+                    <BsTwitterX /> Twitter
                   </button>
                 </div>
               </div>
@@ -682,5 +544,5 @@ const AuthForms = ({ initialTab = "login" }) => {
   )
 }
 
-export default AuthForms
+export default AuthForms;
 
