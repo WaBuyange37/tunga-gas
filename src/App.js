@@ -1,9 +1,18 @@
 "use client"
 
+<<<<<<< HEAD
 import React, { useState, useEffect } from "react"
 import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom"
 import { auth } from "./config/firebase"
 import { onAuthStateChanged } from "firebase/auth"
+=======
+import React,{ useEffect, useState } from "react"
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom"
+import { AuthProvider } from "./context/AuthContext"
+import { CartProvider } from "./context/CartContext"
+import { onAuthStateChanged } from "firebase/auth"
+import { auth } from "./config/firebase"
+>>>>>>> recovered-branch
 import "./App.css"
 
 // Components
@@ -20,6 +29,7 @@ import CheckoutPage from "./pages/CheckoutPage"
 import CartPage from "./pages/CartPage"
 import ProfilePage from "./pages/ProfilePage"
 import WishlistPage from "./pages/WishlistPage"
+<<<<<<< HEAD
 import AdminDashboard from "./pages/AdminDashboard"
 import ProtectedRoute from "./components/ProtectedRoute"
 
@@ -39,24 +49,60 @@ function App() {
   }, [])
 
   // Load cart from localStorage on initial render
+=======
+import AdminDashboard from "./components/admin/AdminDashboard"
+import OrderConfirmationPage from "./pages/OrderConfirmationPage"
+import ProtectedRoute from "./components/ProtectedRoute"
+
+// Load Flutterwave script
+const loadFlutterwaveScript = () => {
+  try {
+    const script = document.createElement("script")
+    script.src = "https://checkout.flutterwave.com/v3.js"
+    script.async = true
+    document.body.appendChild(script)
+  } catch (error) {
+    console.error("Error loading Flutterwave script:", error)
+  }
+}
+
+function App() {
+  // eslint-disable-next-line no-unused-vars
+  const [currentUser, setCurrentUser] = useState(null)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(null)
+
+  // Check authentication state
+>>>>>>> recovered-branch
   useEffect(() => {
-    const savedCart = localStorage.getItem("cart")
-    if (savedCart) {
-      try {
-        setCart(JSON.parse(savedCart))
-      } catch (e) {
-        console.error("Error parsing cart data:", e)
-      }
+    try {
+      const unsubscribe = onAuthStateChanged(
+        auth,
+        (user) => {
+          setCurrentUser(user)
+          setLoading(false)
+        },
+        (error) => {
+          console.error("Auth state change error:", error)
+          setError(error.message)
+          setLoading(false)
+        },
+      )
+
+      return () => unsubscribe()
+    } catch (error) {
+      console.error("Auth setup error:", error)
+      setError(error.message)
+      setLoading(false)
     }
   }, [])
 
-  // Save cart to localStorage whenever it changes
+  // Load Flutterwave script
   useEffect(() => {
-    localStorage.setItem("cart", JSON.stringify(cart))
-    // Dispatch event for other components to update
-    window.dispatchEvent(new Event("cartUpdated"))
-  }, [cart])
+    loadFlutterwaveScript()
+  }, [])
 
+<<<<<<< HEAD
   const addToCart = (product, quantity = 1) => {
     const existingItem = cart.find((item) => item.id === product.id)
 
@@ -79,6 +125,25 @@ function App() {
 
   const clearCart = () => {
     setCart([])
+=======
+  if (loading) {
+    return (
+      <div className="loading-container">
+        <div className="spinner"></div>
+        <p>Loading...</p>
+      </div>
+    )
+  }
+
+  if (error) {
+    return (
+      <div className="error-container">
+        <h2>Something went wrong</h2>
+        <p>{error}</p>
+        <p>Please check your configuration and try again.</p>
+      </div>
+    )
+>>>>>>> recovered-branch
   }
 
   if (loading) {
@@ -91,6 +156,7 @@ function App() {
   }
 
   return (
+<<<<<<< HEAD
     <Router>
       <div className="app">
         <Navbar />
@@ -163,6 +229,77 @@ function App() {
         <Footer />
       </div>
     </Router>
+=======
+    <AuthProvider>
+      <CartProvider>
+        <Router>
+          <div className="app">
+            <Navbar />
+            <main className="main">
+              <Routes>
+                <Route path="/" element={<HomePage />} />
+                <Route path="/shop" element={<ShopPage />} />
+                <Route path="/suppliers" element={<SuppliersPage />} />
+                <Route
+                  path="/tracking"
+                  element={
+                    <ProtectedRoute>
+                      <TrackingPage />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route path="/about" element={<AboutPage />} />
+                <Route path="/login" element={<LoginPage />} />
+                <Route path="/signup" element={<SignupPage />} />
+                <Route path="/cart" element={<CartPage />} />
+                <Route
+                  path="/checkout"
+                  element={
+                    <ProtectedRoute>
+                      <CheckoutPage />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/profile"
+                  element={
+                    <ProtectedRoute>
+                      <ProfilePage />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/wishlist"
+                  element={
+                    <ProtectedRoute>
+                      <WishlistPage />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/order-confirmation/:orderId"
+                  element={
+                    <ProtectedRoute>
+                      <OrderConfirmationPage />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/admin/*"
+                  element={
+                    <ProtectedRoute adminOnly={true}>
+                      <AdminDashboard />
+                    </ProtectedRoute>
+                  }
+                />
+              </Routes>
+            </main>
+            <Footer />
+          </div>
+        </Router>
+      </CartProvider>
+    </AuthProvider>
+>>>>>>> recovered-branch
   )
 }
 
