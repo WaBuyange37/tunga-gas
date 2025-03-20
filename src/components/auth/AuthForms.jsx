@@ -1,16 +1,8 @@
 "use client"
 
-import React,{ useState, useEffect } from "react"
+import React, { useState } from "react"
 import { useNavigate } from "react-router-dom"
-import {
-  createUserWithEmailAndPassword,
-  signInWithEmailAndPassword,
-  signInWithPopup,
-  updateProfile,
-  sendPasswordResetEmail,
-} from "firebase/auth"
-import { doc, setDoc, serverTimestamp } from "firebase/firestore"
-import { auth, db, g_provider } from "../config/firebase"
+import { registerUser, loginWithEmail, loginWithGoogle, resetPassword } from "../../services/authService"
 import { FaGoogle, FaEnvelope, FaMapMarkerAlt } from "react-icons/fa"
 import "./AuthForms.css"
 
@@ -50,19 +42,8 @@ const AuthForms = ({ initialTab = "login" }) => {
 
   const navigate = useNavigate()
 
-  // Check if user is already logged in
-  useEffect(() => {
-    const unsubscribe = auth.onAuthStateChanged((user) => {
-      if (user) {
-        navigate("/shop")
-      }
-    })
-
-    return () => unsubscribe()
-  }, [navigate])
-
   // Update districts when province changes
-  useEffect(() => {
+  React.useEffect(() => {
     if (formData.province && rwandaLocations[formData.province]) {
       setDistricts(rwandaLocations[formData.province])
       // Reset district if it's not in the new province
@@ -194,8 +175,8 @@ const AuthForms = ({ initialTab = "login" }) => {
       setAuthError("")
 
       try {
-        await signInWithEmailAndPassword(auth, formData.email, formData.password)
-        // No need to navigate here as the useEffect will handle it
+        await loginWithEmail(formData.email, formData.password)
+        navigate("/shop") // Redirect to shop page after login
       } catch (error) {
         console.error("Login error:", error)
 
@@ -207,7 +188,7 @@ const AuthForms = ({ initialTab = "login" }) => {
         } else {
           setAuthError("An error occurred during login. Please try again")
         }
-
+      } finally {
         setIsLoading(false)
       }
     }
@@ -221,45 +202,19 @@ const AuthForms = ({ initialTab = "login" }) => {
       setAuthError("")
 
       try {
-        // Create user with email and password
-        const userCredential = await createUserWithEmailAndPassword(auth, formData.email, formData.password)
-
-        // Update profile with display name
-        await updateProfile(userCredential.user, {
-          displayName: formData.fullName,
-        })
-
-        // Prepare user data for Firestore
-        const userData = {
+        await registerUser(formData.email, formData.password, {
           fullName: formData.fullName,
-          email: formData.email,
           phone: formData.phone,
           userType: formData.userType,
-          location: {
-            province: formData.province,
-            district: formData.district,
-            sector: formData.sector,
-          },
-          createdAt: serverTimestamp(),
-        }
+          province: formData.province,
+          district: formData.district,
+          sector: formData.sector,
+          businessName: formData.businessName,
+          businessDescription: formData.businessDescription,
+          rdbCertificate: formData.rdbCertificate,
+        })
 
-        // Add supplier specific data if applicable
-        if (formData.userType === "supplier") {
-          userData.business = {
-            name: formData.businessName,
-            description: formData.businessDescription,
-            // Note: We'll handle file upload separately
-            status: "pending", // Suppliers need approval
-          }
-        }
-
-        // Store user data in Firestore
-        await setDoc(doc(db, "users", userCredential.user.uid), userData)
-
-        // If there's an RDB certificate, we would upload it to Firebase Storage here
-        // This would require additional code to handle file uploads
-
-        // No need to navigate here as the useEffect will handle it
+        navigate("/shop") // Redirect to shop page after signup
       } catch (error) {
         console.error("Signup error:", error)
 
@@ -271,7 +226,7 @@ const AuthForms = ({ initialTab = "login" }) => {
         } else {
           setAuthError("An error occurred during signup. Please try again")
         }
-
+      } finally {
         setIsLoading(false)
       }
     }
@@ -282,11 +237,12 @@ const AuthForms = ({ initialTab = "login" }) => {
     setAuthError("")
 
     try {
-      await signInWithPopup(auth, g_provider)
-      // No need to navigate here as the useEffect will handle it
+      await loginWithGoogle()
+      navigate("/shop") // Redirect to shop page after login
     } catch (error) {
       console.error("Google sign-in error:", error)
       setAuthError("An error occurred during Google sign-in. Please try again")
+    } finally {
       setIsLoading(false)
     }
   }
@@ -303,9 +259,8 @@ const AuthForms = ({ initialTab = "login" }) => {
     setAuthError("")
 
     try {
-      await sendPasswordResetEmail(auth, resetEmail)
+      await resetPassword(resetEmail)
       setResetSent(true)
-      setIsLoading(false)
     } catch (error) {
       console.error("Password reset error:", error)
 
@@ -314,7 +269,7 @@ const AuthForms = ({ initialTab = "login" }) => {
       } else {
         setAuthError("An error occurred. Please try again")
       }
-
+    } finally {
       setIsLoading(false)
     }
   }

@@ -1,7 +1,11 @@
 "use client"
 
-import React,{ useState, useEffect } from "react"
-import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom"
+import React,{ useEffect, useState } from "react"
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom"
+import { AuthProvider } from "./context/AuthContext"
+import { CartProvider } from "./context/CartContext"
+import { onAuthStateChanged } from "firebase/auth"
+import { auth } from "./config/firebase"
 import "./App.css"
 
 // Components
@@ -16,139 +20,148 @@ import LoginPage from "./pages/LoginPage"
 import SignupPage from "./pages/SignupPage"
 import CheckoutPage from "./pages/CheckoutPage"
 import CartPage from "./pages/CartPage"
-import AdminDashboard from "./pages/AdminDashboard"
+import ProfilePage from "./pages/ProfilePage"
+import WishlistPage from "./pages/WishlistPage"
+import AdminDashboard from "./components/admin/AdminDashboard"
+import OrderConfirmationPage from "./pages/OrderConfirmationPage"
 import ProtectedRoute from "./components/ProtectedRoute"
-import B2BSection from "./components/B2BSection"
-import B2CSection from "./components/B2CSection"
+
+// Load Flutterwave script
+const loadFlutterwaveScript = () => {
+  try {
+    const script = document.createElement("script")
+    script.src = "https://checkout.flutterwave.com/v3.js"
+    script.async = true
+    document.body.appendChild(script)
+  } catch (error) {
+    console.error("Error loading Flutterwave script:", error)
+  }
+}
 
 function App() {
-  const [isAuthenticated, setIsAuthenticated] = useState(false)
-  const [isAdmin, setIsAdmin] = useState(false)
-  const [cart, setCart] = useState([])
+  // eslint-disable-next-line no-unused-vars
+  const [currentUser, setCurrentUser] = useState(null)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(null)
 
-  // Load cart from localStorage on initial render
+  // Check authentication state
   useEffect(() => {
-    const savedCart = localStorage.getItem("cart")
-    if (savedCart) {
-      try {
-        setCart(JSON.parse(savedCart))
-      } catch (e) {
-        console.error("Error parsing cart data:", e)
-      }
+    try {
+      const unsubscribe = onAuthStateChanged(
+        auth,
+        (user) => {
+          setCurrentUser(user)
+          setLoading(false)
+        },
+        (error) => {
+          console.error("Auth state change error:", error)
+          setError(error.message)
+          setLoading(false)
+        },
+      )
+
+      return () => unsubscribe()
+    } catch (error) {
+      console.error("Auth setup error:", error)
+      setError(error.message)
+      setLoading(false)
     }
   }, [])
 
-  // Save cart to localStorage whenever it changes
+  // Load Flutterwave script
   useEffect(() => {
-    localStorage.setItem("cart", JSON.stringify(cart))
-    // Dispatch event for other components to update
-    window.dispatchEvent(new Event("cartUpdated"))
-  }, [cart])
+    loadFlutterwaveScript()
+  }, [])
 
-  const login = (email, password) => {
-    // In a real app, this would validate credentials with a backend
-    if (email === "admin@tungagas.com" && password === "admin123") {
-      setIsAuthenticated(true)
-      setIsAdmin(true)
-      return true
-    } else if (email && password) {
-      setIsAuthenticated(true)
-      setIsAdmin(false)
-      return true
-    }
-    return false
+  if (loading) {
+    return (
+      <div className="loading-container">
+        <div className="spinner"></div>
+        <p>Loading...</p>
+      </div>
+    )
   }
 
-  const logout = () => {
-    setIsAuthenticated(false)
-    setIsAdmin(false)
-  }
-
-  const addToCart = (product, quantity = 1) => {
-    const existingItem = cart.find((item) => item.id === product.id)
-
-    if (existingItem) {
-      setCart(cart.map((item) => (item.id === product.id ? { ...item, quantity: item.quantity + quantity } : item)))
-    } else {
-      setCart([...cart, { ...product, quantity }])
-    }
-  }
-
-  const removeFromCart = (productId) => {
-    setCart(cart.filter((item) => item.id !== productId))
-  }
-
-  const updateCartItemQuantity = (productId, quantity) => {
-    if (quantity < 1) return
-
-    setCart(cart.map((item) => (item.id === productId ? { ...item, quantity: quantity } : item)))
-  }
-
-  const clearCart = () => {
-    setCart([])
+  if (error) {
+    return (
+      <div className="error-container">
+        <h2>Something went wrong</h2>
+        <p>{error}</p>
+        <p>Please check your configuration and try again.</p>
+      </div>
+    )
   }
 
   return (
-    <Router>
-      <div className="app">
-        <Navbar
-          isAuthenticated={isAuthenticated}
-          isAdmin={isAdmin}
-          logout={logout}
-          cartItemsCount={cart.reduce((total, item) => total + item.quantity, 0)}
-        />
-        <main className="main">
-          <Routes>
-            <Route path="/" element={<HomePage addToCart={addToCart} />} />
-            <Route path="/shop" element={<ShopPage addToCart={addToCart} />} />
-            <Route path="/suppliers" element={<SuppliersPage />} />
-            <Route path="/tracking" element={<TrackingPage />} />
-            <Route path="/about" element={<AboutPage />} />
-            <Route path="/login" element={isAuthenticated ? <Navigate to="/" /> : <LoginPage login={login} />} />
-            <Route path="/b2b" element={<B2BSection />} />
-            <Route path="/b2c" element={<B2CSection />} />
-            <Route
-              path="/signup"
-              element={isAuthenticated ? <Navigate to="/" /> : <SignupPage setIsAuthenticated={setIsAuthenticated} />}
-            />
-            <Route
-              path="/cart"
-              element={
-                <CartPage
-                  cart={cart}
-                  removeFromCart={removeFromCart}
-                  updateCartItemQuantity={updateCartItemQuantity}
-                  clearCart={clearCart}
+    <AuthProvider>
+      <CartProvider>
+        <Router>
+          <div className="app">
+            <Navbar />
+            <main className="main">
+              <Routes>
+                <Route path="/" element={<HomePage />} />
+                <Route path="/shop" element={<ShopPage />} />
+                <Route path="/suppliers" element={<SuppliersPage />} />
+                <Route
+                  path="/tracking"
+                  element={
+                    <ProtectedRoute>
+                      <TrackingPage />
+                    </ProtectedRoute>
+                  }
                 />
-              }
-            />
-            <Route
-              path="/checkout"
-              element={
-                <ProtectedRoute isAuthenticated={isAuthenticated}>
-                  <CheckoutPage
-                    cart={cart}
-                    removeFromCart={removeFromCart}
-                    updateCartItemQuantity={updateCartItemQuantity}
-                    clearCart={clearCart}
-                  />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/admin/*"
-              element={
-                <ProtectedRoute isAuthenticated={isAuthenticated && isAdmin}>
-                  <AdminDashboard />
-                </ProtectedRoute>
-              }
-            />
-
-          </Routes>
-        </main>
-        <Footer />
-      </div>
-    </Router>
+                <Route path="/about" element={<AboutPage />} />
+                <Route path="/login" element={<LoginPage />} />
+                <Route path="/signup" element={<SignupPage />} />
+                <Route path="/cart" element={<CartPage />} />
+                <Route
+                  path="/checkout"
+                  element={
+                    <ProtectedRoute>
+                      <CheckoutPage />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/profile"
+                  element={
+                    <ProtectedRoute>
+                      <ProfilePage />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/wishlist"
+                  element={
+                    <ProtectedRoute>
+                      <WishlistPage />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/order-confirmation/:orderId"
+                  element={
+                    <ProtectedRoute>
+                      <OrderConfirmationPage />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/admin/*"
+                  element={
+                    <ProtectedRoute adminOnly={true}>
+                      <AdminDashboard />
+                    </ProtectedRoute>
+                  }
+                />
+              </Routes>
+            </main>
+            <Footer />
+          </div>
+        </Router>
+      </CartProvider>
+    </AuthProvider>
   )
 }
 
