@@ -1,6 +1,10 @@
 "use client"
 
+<<<<<<< HEAD
 import React, { useState, useEffect } from "react"
+=======
+import React,{ useState, useEffect } from "react"
+>>>>>>> recovered-branch
 import { Link } from "react-router-dom"
 import { FaHeart, FaShoppingCart, FaTrash } from "react-icons/fa"
 import "./WishlistPage.css"

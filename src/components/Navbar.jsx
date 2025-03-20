@@ -1,25 +1,46 @@
 "use client"
 
+<<<<<<< HEAD
 import React, { useState, useEffect, useRef } from "react"
+=======
+import React,{ useState, useEffect, useRef } from "react"
+>>>>>>> recovered-branch
 import { Link, NavLink, useLocation } from "react-router-dom"
 import {
   FaGasPump,
   FaBars,
   FaTimes,
   FaUser,
+<<<<<<< HEAD
   FaShoppingCart,
+=======
+>>>>>>> recovered-branch
   FaSignOutAlt,
   FaCog,
   FaHistory,
   FaHeart,
+<<<<<<< HEAD
   FaChevronDown,
+=======
+  FaHome,
+  FaStore,
+  FaTruck,
+  FaWarehouse,
+  FaInfoCircle,
+  FaChevronDown,
+  FaShoppingCart,
+>>>>>>> recovered-branch
 } from "react-icons/fa"
 import { auth } from "../config/firebase"
 import { signOut } from "firebase/auth"
 import "./Navbar.css"
 
 const Navbar = () => {
+<<<<<<< HEAD
   const [isMenuOpen, setIsMenuOpen] = useState(!false)
+=======
+  const [isMenuOpen, setIsMenuOpen] = useState(false)
+>>>>>>> recovered-branch
   const [currentUser, setCurrentUser] = useState(null)
   const [cartItems, setCartItems] = useState([])
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false)
@@ -114,6 +135,32 @@ const Navbar = () => {
   // Get user's profile image or use default
   const userProfileImage = currentUser?.photoURL || "/placeholder.svg?height=40&width=40"
 
+<<<<<<< HEAD
+=======
+  // Navigation items
+  const navItems = [
+    { path: "/", label: "Home", icon: <FaHome /> },
+    { path: "/shop", label: "Shop", icon: <FaStore /> },
+    { path: "/suppliers", label: "Suppliers", icon: <FaWarehouse /> },
+    { path: "/about", label: "About Us", icon: <FaInfoCircle /> },
+  ]
+
+  // User-specific navigation items
+  const userNavItems = currentUser
+    ? [
+        { path: "/wishlist", label: "My Wishlist", icon: <FaHeart /> },
+        { path: "/tracking", label: "Track Order", icon: <FaTruck /> },
+      ]
+    : []
+
+  // Admin-specific navigation items
+  const adminNavItems =
+    currentUser?.email === "admin@tungagas.com" ? [{ path: "/admin", label: "Admin Dashboard", icon: <FaCog /> }] : []
+
+  // Combine all navigation items
+  const allNavItems = [...navItems, ...userNavItems, ...adminNavItems]
+
+>>>>>>> recovered-branch
   return (
     <header className="header">
       <div className="container header-container">
@@ -123,10 +170,11 @@ const Navbar = () => {
         </Link>
 
         <nav className={`nav ${isMenuOpen ? "nav-mobile open" : "nav-mobile"}`}>
-          <button className="menu-button" onClick={toggleMenu}>
+          <button className="menu-button close-menu" onClick={toggleMenu}>
             <FaTimes />
           </button>
           <ul className="nav-list">
+<<<<<<< HEAD
             <li className="nav-item">
               <NavLink to="/" onClick={() => setIsMenuOpen(false)}>
                 Home
@@ -159,6 +207,34 @@ const Navbar = () => {
                 <NavLink to="/admin" onClick={() => setIsMenuOpen(false)}>
                   Admin Dashboard
                 </NavLink>
+=======
+            {allNavItems.map((item) => (
+              <li className="nav-item" key={item.path}>
+                <NavLink to={item.path} onClick={() => setIsMenuOpen(false)} className="nav-link">
+                  <span className="nav-icon">{item.icon}</span>
+                  <span className="nav-label">{item.label}</span>
+                </NavLink>
+              </li>
+            ))}
+            {currentUser && (
+              <li className="nav-item mobile-only">
+                <Link to="/cart" className="nav-link" onClick={() => setIsMenuOpen(false)}>
+                  <span className="nav-icon">
+                    <FaShoppingCart />
+                  </span>
+                  <span className="nav-label">Cart ({cartItemCount})</span>
+                </Link>
+              </li>
+            )}
+            {currentUser && (
+              <li className="nav-item mobile-only">
+                <button className="nav-link logout-link" onClick={handleLogout}>
+                  <span className="nav-icon">
+                    <FaSignOutAlt />
+                  </span>
+                  <span className="nav-label">Logout</span>
+                </button>
+>>>>>>> recovered-branch
               </li>
             )}
           </ul>
@@ -167,8 +243,14 @@ const Navbar = () => {
         <div className="auth-buttons">
           {currentUser ? (
             <>
+<<<<<<< HEAD
               <Link to="/cart" className="btn btn-primary cart-btn">
                 <FaShoppingCart /> Cart {cartItemCount > 0 && <span className="cart-count">{cartItemCount}</span>}
+=======
+              <Link to="/cart" className="cart-icon-link">
+                <FaShoppingCart />
+                {cartItemCount > 0 && <span className="cart-count">{cartItemCount}</span>}
+>>>>>>> recovered-branch
               </Link>
               <div className="profile-menu-container" ref={profileMenuRef}>
                 <button className="profile-menu-trigger" onClick={toggleProfileMenu}>
@@ -211,6 +293,12 @@ const Navbar = () => {
                       <Link to="/wishlist" className="profile-menu-item" onClick={() => setIsProfileMenuOpen(false)}>
                         <FaHeart /> My Wishlist
                       </Link>
+<<<<<<< HEAD
+=======
+                      <Link to="/cart" className="profile-menu-item" onClick={() => setIsProfileMenuOpen(false)}>
+                        <FaShoppingCart /> My Cart
+                      </Link>
+>>>>>>> recovered-branch
                       <Link to="/settings" className="profile-menu-item" onClick={() => setIsProfileMenuOpen(false)}>
                         <FaCog /> Account Settings
                       </Link>
@@ -230,11 +318,6 @@ const Navbar = () => {
               <Link to="/signup" className="btn btn-primary">
                 Sign Up
               </Link>
-              {cartItemCount > 0 && (
-                <Link to="/cart" className="btn btn-primary cart-btn">
-                  <FaShoppingCart /> <span className="cart-count">{cartItemCount}</span>
-                </Link>
-              )}
             </>
           )}
         </div>

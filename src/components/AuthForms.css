@@ -97,8 +97,12 @@
   gap: 0.5rem;
   padding: 0.75rem;
   border-radius: var(--border-radius);
+<<<<<<< HEAD
   font-weight: 600;
   font-size: large;
+=======
+  font-weight: 500;
+>>>>>>> recovered-branch
   cursor: pointer;
   transition: var(--transition);
   border: 1px solid var(--gray-200);
@@ -110,11 +114,19 @@
 }
 
 .google-btn {
+<<<<<<< HEAD
   color: #000000;
 }
 
 .twitter-btn {
   color: #000508;
+=======
+  color: #4285f4;
+}
+
+.twitter-btn {
+  color: #1da1f2;
+>>>>>>> recovered-branch
 }
 
 .password-reset-form,
@@ -144,3 +156,114 @@
   width: 100%;
 }
 
+<<<<<<< HEAD
+=======
+/* Location section styles */
+.location-section,
+.supplier-section {
+  background-color: var(--gray-50);
+  padding: 1.5rem;
+  border-radius: var(--border-radius);
+  margin-bottom: 1.5rem;
+}
+
+.location-heading,
+.supplier-heading {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 1.125rem;
+  margin-bottom: 1rem;
+  color: var(--gray-800);
+}
+
+/* User type selector */
+.user-type-selector {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.user-type-option {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.75rem;
+  border: 1px solid var(--gray-300);
+  border-radius: var(--border-radius);
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.user-type-option.selected {
+  border-color: var(--primary);
+  background-color: rgba(255, 107, 53, 0.05);
+}
+
+.user-type-option input {
+  margin-right: 0.5rem;
+}
+
+/* File input styles */
+.form-textarea {
+  width: 100%;
+  padding: 0.75rem;
+  border: 1px solid var(--gray-300);
+  border-radius: var(--border-radius);
+  font-family: inherit;
+  font-size: 1rem;
+  resize: vertical;
+  min-height: 100px;
+}
+
+.file-input-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  margin-bottom: 0.5rem;
+}
+
+.form-file-input {
+  position: absolute;
+  width: 0.1px;
+  height: 0.1px;
+  opacity: 0;
+  overflow: hidden;
+  z-index: -1;
+}
+
+.file-input-text {
+  flex: 1;
+  padding: 0.75rem;
+  border: 1px solid var(--gray-300);
+  border-radius: var(--border-radius) 0 0 var(--border-radius);
+  background-color: white;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--gray-600);
+}
+
+.file-input-button {
+  padding: 0.75rem 1rem;
+  background-color: var(--gray-200);
+  border: 1px solid var(--gray-300);
+  border-left: none;
+  border-radius: 0 var(--border-radius) var(--border-radius) 0;
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.file-input-button:hover {
+  background-color: var(--gray-300);
+}
+
+.file-input-help {
+  font-size: 0.75rem;
+  color: var(--gray-600);
+  margin-top: 0.25rem;
+}
+
+>>>>>>> recovered-branch
