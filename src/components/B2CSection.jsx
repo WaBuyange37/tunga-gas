@@ -49,7 +49,7 @@ const B2CSection = (props) => {
     // Hide notification after 3 seconds
     setTimeout(() => {
       setNotification({ show: false, message: "", type: "" })
-    }, 3000)
+    }, 60000)
   }
 
   const products = [

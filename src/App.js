@@ -22,6 +22,9 @@ import ProfilePage from "./pages/ProfilePage"
 import WishlistPage from "./pages/WishlistPage"
 import AdminDashboard from "./pages/AdminDashboard"
 import ProtectedRoute from "./components/ProtectedRoute"
+import LoginForm from "./components/LoginForm"
+import SignupForm from "./components/SignupForm"
+import CustomerDashboard from "./pages/CustomerDashboard"
 
 function App() {
   const [currentUser, setCurrentUser] = useState(null)
@@ -58,13 +61,26 @@ function App() {
   }, [cart])
 
   const addToCart = (product, quantity = 1) => {
-    const existingItem = cart.find((item) => item.id === product.id)
+    setCart((prevCart) => {
+      const existingItem = prevCart.find((item) => item.id === product.id)
+      if (existingItem) {
+        return prevCart.map((item) =>
+          item.id === product.id
+            ? { ...item, quantity: item.quantity + quantity }
+            : item
+        )
+      } else {
+        return [...prevCart, { ...product, quantity }]
+      }
+    })
 
-    if (existingItem) {
-      setCart(cart.map((item) => (item.id === product.id ? { ...item, quantity: item.quantity + quantity } : item)))
-    } else {
-      setCart([...cart, { ...product, quantity }])
-    }
+    // const existingItem = cart.find((item) => item.id === product.id)
+
+    // if (existingItem) {
+    //   setCart(cart.map((item) => (item.id === product.id ? { ...item, quantity: item.quantity + quantity } : item)))
+    // } else {
+    //   setCart([...cart, { ...product, quantity }])
+    // }
   }
 
   const removeFromCart = (productId) => {
@@ -108,8 +124,18 @@ function App() {
               }
             />
             <Route path="/about" element={<AboutPage />} />
-            <Route path="/login" element={currentUser ? <Navigate to="/shop" /> : <LoginPage />} />
-            <Route path="/signup" element={currentUser ? <Navigate to="/shop" /> : <SignupPage />} />
+            {/* <Route path="/login" element={currentUser ? <Navigate to="/shop" /> : <LoginPage />} /> */}
+            {/* <Route path="/signup" element={currentUser ? <Navigate to="/shop" /> : <SignupPage />} /> */}
+            <Route
+              path="/dashboard"
+              element={
+                <ProtectedRoute user={currentUser}>
+                  <CustomerDashboard user={currentUser} />
+                </ProtectedRoute>
+              }
+            />
+            <Route path="/login" element={currentUser ? <Navigate to="/dashboard" /> : <LoginForm />} />
+            <Route path="/signup" element={currentUser ? <Navigate to="/dashboard" /> : <SignupForm />} />
             <Route
               path="/cart"
               element={

@@ -114,6 +114,7 @@ const Navbar = () => {
   // Get user's profile image or use default
   const userProfileImage = currentUser?.photoURL || "/placeholder.svg?height=40&width=40"
 
+  // const userProfileImage = "/placeholder.svg?height=40&width=40"
   return (
     <header className="header">
       <div className="container header-container">
