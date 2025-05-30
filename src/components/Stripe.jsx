@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { loadStripe } from "@stripe/stripe-js";
 import { Elements, useStripe, useElements, CardNumberElement, CardExpiryElement, CardCvcElement } from "@stripe/react-stripe-js";
 
-const stripePromise = loadStripe("pk_test_51RTnwL2XsCpXKrnixAfGT5nEfb7HvaEZY7WRrIEgwpn6M13L2TYm8yCpMqqvBEzXWb0ZAVeNvHQtkUakW2GXZN7i005JWzNrMI");
+const stripePromise = loadStripe("................"); // Replace with your actual Stripe publishable key
 
 const cardLogos = (
     <div style={{ display: "flex", gap: 16, justifyContent: "center", marginBottom: 24 }}>
